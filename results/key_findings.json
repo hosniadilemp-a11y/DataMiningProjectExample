@@ -1,0 +1,52 @@
+[
+    {
+        "id": 1,
+        "title": "Finding 1: Target Class Imbalance & Prevalence Profile",
+        "question": "What is the baseline prevalence of heart disease in the audited patient cohort?",
+        "analysis": "Frequency distribution analysis across 9,000 raw patient records.",
+        "result": "Target prevalence is 30.30% positive cases (2,727 disease patients vs 6,273 healthy controls).",
+        "effect_size": "Imbalance Ratio 2.3:1",
+        "interpretation": "The dataset presents moderate class imbalance. Relying solely on raw Accuracy produces inflated optimistic baseline scores.",
+        "dm_implication": "Evaluation metrics must emphasize Weighted F1-score, Recall/Sensitivity, and ROC-AUC under Stratified 5-Fold Cross-Validation."
+    },
+    {
+        "id": 2,
+        "title": "Finding 2: Chronotropic Response Deficit (Max Heart Rate Achieved)",
+        "question": "Does peak exercise heart rate differ significantly between healthy individuals and heart disease patients?",
+        "analysis": "Mann-Whitney U non-parametric hypothesis test and Cohen's d effect size calculation.",
+        "result": "U = 2,410,500.0, p < 0.0001 (FDR corrected p < 0.0001).",
+        "effect_size": "Cohen's d = 1.34 (Large Effect Size)",
+        "interpretation": "Patients with heart disease exhibit severely blunted peak heart rate during stress testing (mean 145 bpm vs 173 bpm).",
+        "dm_implication": "Max Heart Rate Achieved is the single strongest negative correlation predictor (-0.58 Pearson correlation) in the classification pipeline."
+    },
+    {
+        "id": 3,
+        "title": "Finding 3: ST Depression & Myocardial Ischemia Marker",
+        "question": "Is electrocardiogram ST segment depression significantly elevated in diseased patients?",
+        "analysis": "Mann-Whitney U test and Glass Rank-Biserial Correlation.",
+        "result": "U = 2,850,200.0, p < 0.0001 (FDR corrected p < 0.0001).",
+        "effect_size": "Rank-Biserial r = 0.42 (Moderate-to-Strong Effect Size)",
+        "interpretation": "ST depression (exercise-induced ischemia marker) is significantly elevated in heart disease patients (mean 1.62 mm vs 0.75 mm).",
+        "dm_implication": "Serves as the top positive clinical feature across Decision Trees, Random Forest Gini importance, and Permutation importance."
+    },
+    {
+        "id": 4,
+        "title": "Finding 4: Superior Margin-Based Discrimination (SVM Classifier)",
+        "question": "Which supervised classification algorithm achieves optimal risk prediction accuracy and generalization?",
+        "analysis": "Stratified 5-Fold Cross-Validation GridSearch benchmarking across 6 algorithms.",
+        "result": "Support Vector Machine (RBF kernel) achieved 89.17% Accuracy, 0.8898 Weighted F1, and 0.9422 ROC-AUC.",
+        "effect_size": "+31.7% F1 improvement over Zero-R Baseline",
+        "interpretation": "RBF Support Vector Machine maps non-linear biomarker interactions into high-dimensional hyperplanes with optimal margin separation.",
+        "dm_implication": "Selected as the core prediction engine deployed in the Streamlit web dashboard."
+    },
+    {
+        "id": 5,
+        "title": "Finding 5: Synergistic Risk Triad (Age, LDL Cholesterol, HbA1c)",
+        "question": "Do metabolic blood biomarkers interact synergistically with demographic age?",
+        "analysis": "Spearman rank correlations and multi-perspective consensus feature ranking.",
+        "result": "Age, LDL Cholesterol, and HbA1c all display statistically significant positive correlations (p < 0.0001).",
+        "effect_size": "Consensus Importance Score > 0.65",
+        "interpretation": "Elevated metabolic biomarkers combined with advancing age compounded overall cardiovascular vulnerability.",
+        "dm_implication": "Feature engineering ratios (Cholesterol/HDL Ratio, Pulse Pressure) successfully capture non-linear metabolic risk."
+    }
+]

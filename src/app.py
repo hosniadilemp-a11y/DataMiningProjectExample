@@ -1,13 +1,15 @@
 """
 Streamlit Web Application for Heart Disease Risk Prediction.
-Interactive Data Mining Demonstration App containing 7 dedicated pages:
-1. Overview
-2. Dataset Explorer
-3. EDA Dashboard
-4. Statistical Analysis
-5. Model Comparison
-6. Heart Disease Risk Prediction
-7. About & Team Contributions
+Interactive Data Mining Academic Dashboard containing 9 dedicated pages:
+1. Home & Executive KPI Summary
+2. Dataset Explorer & Quality Audit
+3. EDA Dashboard (Univariate, Bivariate, Multivariate, PCA)
+4. Statistical Hypothesis Suite (FDR Corrected & Effect Sizes)
+5. Multi-Perspective Feature Importance Comparison
+6. Model Benchmark & Trade-offs
+7. Interactive Heart Disease Risk Predictor
+8. Key Discoveries & Findings
+9. About & Student Contribution Matrix
 """
 
 import streamlit as st
@@ -15,44 +17,71 @@ import pandas as pd
 import numpy as np
 import joblib
 from pathlib import Path
-from scipy import stats
 import json
 
 # Setup page configuration
 st.set_page_config(
-    page_title="Heart Disease Risk Prediction — Data Mining Demo",
+    page_title="Heart Disease Risk Prediction — Advanced Data Mining",
     page_icon="🫀",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
-# Custom Styling (Dark/Modern sleek palette)
+# Custom Styling (Academic / Sleek Dashboard Palette)
 st.markdown("""
 <style>
-    .main-header {
-        font-size: 2.3rem;
+    .main-title {
+        font-size: 2.4rem;
         font-weight: 800;
         color: #1E3A8A;
         margin-bottom: 0.2rem;
     }
-    .sub-header {
+    .sub-title {
         font-size: 1.1rem;
         color: #4B5563;
         margin-bottom: 1.5rem;
     }
-    .metric-card {
-        background-color: #F3F4F6;
+    .kpi-card {
+        background-color: #F8FAFC;
+        border: 1px solid #E2E8F0;
         border-left: 5px solid #2563EB;
-        padding: 1rem;
-        border-radius: 0.5rem;
-        margin-bottom: 1rem;
+        padding: 1.2rem;
+        border-radius: 0.6rem;
+        text-align: center;
     }
-    .warning-box {
-        background-color: #FEF3C7;
-        border-left: 5px solid #D97706;
-        padding: 1rem;
+    .kpi-title {
+        font-size: 0.9rem;
+        color: #64748B;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+    .kpi-value {
+        font-size: 1.8rem;
+        font-weight: 800;
+        color: #0F172A;
+    }
+    .finding-box {
+        background-color: #EFF6FF;
+        border-left: 5px solid #3B82F6;
+        padding: 1.2rem;
         border-radius: 0.5rem;
-        margin-bottom: 1rem;
+        margin-bottom: 1.2rem;
+    }
+    .badge-reject {
+        background-color: #DC2626;
+        color: white;
+        padding: 0.25rem 0.6rem;
+        border-radius: 0.3rem;
+        font-weight: bold;
+        font-size: 0.85rem;
+    }
+    .badge-fdr {
+        background-color: #059669;
+        color: white;
+        padding: 0.25rem 0.6rem;
+        border-radius: 0.3rem;
+        font-weight: bold;
+        font-size: 0.85rem;
     }
     .disclaimer-box {
         background-color: #FEE2E2;
@@ -67,21 +96,29 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# Helper Path Loaders
+# Helper Paths
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 DATA_RAW_PATH = PROJECT_ROOT / "data" / "raw" / "heart_disease_risk_2026.csv"
 DATA_PROCESSED_DIR = PROJECT_ROOT / "data" / "processed"
 MODELS_DIR = PROJECT_ROOT / "models"
 FIGURES_DIR = PROJECT_ROOT / "docs" / "figures"
+RESULTS_DIR = PROJECT_ROOT / "results"
 
 @st.cache_data
-def load_data():
+def load_raw():
     if DATA_RAW_PATH.exists():
         return pd.read_csv(DATA_RAW_PATH)
     return None
 
+@st.cache_data
+def load_json_artifact(path: Path):
+    if path.exists():
+        with open(path, "r", encoding="utf-8") as f:
+            return json.load(f)
+    return []
+
 @st.cache_resource
-def load_model_artifacts():
+def load_ml_artifacts():
     best_model_path = MODELS_DIR / "best_model.joblib"
     pipeline_path = MODELS_DIR / "preprocessing_pipeline.joblib"
     meta_path = MODELS_DIR / "model_metadata.json"
@@ -89,85 +126,92 @@ def load_model_artifacts():
     
     model = joblib.load(best_model_path) if best_model_path.exists() else None
     pipeline = joblib.load(pipeline_path) if pipeline_path.exists() else None
-    
-    metadata = {}
-    if meta_path.exists():
-        with open(meta_path, "r") as f:
-            metadata = json.load(f)
-            
+    metadata = load_json_artifact(meta_path) if meta_path.exists() else {}
     comparison_df = pd.read_csv(comp_path) if comp_path.exists() else None
+    
     return model, pipeline, metadata, comparison_df
+
+df = load_raw()
+best_model, preprocessor_pipeline, model_metadata, comparison_df = load_ml_artifacts()
+stats_data = load_json_artifact(RESULTS_DIR / "statistical_tests.json")
+findings_data = load_json_artifact(RESULTS_DIR / "key_findings.json")
+fi_data = load_json_artifact(RESULTS_DIR / "feature_importances.json")
 
 # Navigation Sidebar
 st.sidebar.title("🫀 Heart Disease DM")
-st.sidebar.markdown("**Educational Data Mining Demonstration**")
+st.sidebar.markdown("**Advanced Academic Dashboard**")
 
 page = st.sidebar.radio(
     "Navigation Menu",
     [
-        "1. Overview",
+        "1. Home & Key Metrics",
         "2. Dataset Explorer",
         "3. EDA Dashboard",
-        "4. Statistical Analysis",
-        "5. Model Comparison",
-        "6. Heart Disease Risk Prediction",
-        "7. About & Contributions"
+        "4. Statistical Analysis (Hypotheses)",
+        "5. Feature Importance Comparison",
+        "6. Model Benchmark & Trade-offs",
+        "7. Heart Disease Risk Predictor",
+        "8. Key Discoveries & Findings",
+        "9. About & Student Matrix"
     ]
 )
 
 st.sidebar.markdown("---")
 st.sidebar.info("""
 **Simulated Team:**
-- `AISD05`: Data & EDA
-- `SIAD19`: ML Models
-- `RSD20`: Streamlit & App
+- `AISD05`: Data, Audit, EDA & Hypothesis Tests
+- `SIAD19`: Preprocessing & ML Modeling
+- `RSD20`: Streamlit Dashboard, Report & PDF
 """)
 
-df = load_data()
-best_model, preprocessor_pipeline, model_metadata, comparison_df = load_model_artifacts()
-
 # ==========================================
-# PAGE 1 — OVERVIEW
+# PAGE 1 — HOME & KEY METRICS
 # ==========================================
-if page == "1. Overview":
-    st.markdown('<div class="main-header">🫀 Heart Disease Risk Prediction</div>', unsafe_allow_html=True)
-    st.markdown('<div class="sub-header">Data Mining & Supervised Machine Learning Reference Project</div>', unsafe_allow_html=True)
+if page == "1. Home & Key Metrics":
+    st.markdown('<div class="main-title">🫀 Heart Disease Risk Prediction</div>', unsafe_allow_html=True)
+    st.markdown('<div class="sub-title">Advanced Supervised Data Mining & Statistical Analysis Study</div>', unsafe_allow_html=True)
     
     st.markdown("""
-    > ⚠️ **DEMONSTRATION / SAMPLE PROJECT WARNING**  
-    > This repository and application are educational reference projects created to demonstrate the expected structure, methodology, documentation, Git workflow, and presentation of a Data Mining mini-project.
+    > ⚠️ **DEMONSTRATION / SAMPLE PROJECT NOTICE**  
+    > Educational reference project created to demonstrate scientific rigor, statistical testing, machine learning benchmarking, and Streamlit dashboard design. Uses **ONE GitHub account** with simulated student contributors (`AISD05`, `SIAD19`, `RSD20`).
     """)
     
+    st.subheader("📌 Executive KPI Dashboard")
+    kpi1, kpi2, kpi3, kpi4, kpi5, kpi6 = st.columns(6)
+    
+    with kpi1:
+        st.markdown('<div class="kpi-card"><div class="kpi-title">PATIENTS</div><div class="kpi-value">9,000</div></div>', unsafe_allow_html=True)
+    with kpi2:
+        st.markdown('<div class="kpi-card"><div class="kpi-title">FEATURES</div><div class="kpi-value">25</div></div>', unsafe_allow_html=True)
+    with kpi3:
+        st.markdown('<div class="kpi-card"><div class="kpi-title">PREVALENCE</div><div class="kpi-value">30.3%</div></div>', unsafe_allow_html=True)
+    with kpi4:
+        st.markdown('<div class="kpi-card"><div class="kpi-title">BEST MODEL</div><div class="kpi-value">SVM</div></div>', unsafe_allow_html=True)
+    with kpi5:
+        st.markdown('<div class="kpi-card"><div class="kpi-title">ROC-AUC</div><div class="kpi-value">0.942</div></div>', unsafe_allow_html=True)
+    with kpi6:
+        st.markdown('<div class="kpi-card"><div class="kpi-title">TEST RECALL</div><div class="kpi-value">76.7%</div></div>', unsafe_allow_html=True)
+
+    st.markdown("---")
     col1, col2 = st.columns([2, 1])
     
     with col1:
-        st.subheader("📌 Project Problem Statement")
+        st.subheader("📖 Project Summary & Scientific Motivation")
         st.write("""
-        Cardiovascular diseases remain a leading global cause of mortality. Early identification of individuals at high risk of heart disease based on clinical metrics, lifestyle factors, and physiological markers enables timely medical intervention and lifestyle modification.
+        Cardiovascular diseases (CVDs) remain the leading global cause of mortality. This project investigates whether non-invasive routine patient characteristics, physiological stress tests, blood chemistry biomarkers, and self-reported lifestyle habits can accurately predict individual heart disease risk.
         
-        **Core Research Question:**
-        *“Can patient demographics, clinical biomarkers, and lifestyle characteristics accurately predict whether an individual is at high risk of developing heart disease?”*
-        """)
-        
-        st.subheader("🎯 Objectives")
-        st.markdown("""
-        - **Data Quality & Audit:** Inspect raw dataset schema, audit missing values, duplicates, and distributions.
-        - **Exploratory Data Analysis (EDA):** Visualize key risk drivers (ST depression, maximum heart rate, LDL/HDL, HbA1c).
-        - **Statistical Rigor:** Formulate formal null/alternative hypotheses ($H_0$, $H_1$) and test associations via Chi-Square and Mann-Whitney U tests.
-        - **Supervised Classification Benchmark:** Train and tune **6 algorithms**: Zero-R, KNN, Decision Tree, Random Forest, Naive Bayes, and SVM using 5-fold Stratified Cross-Validation.
-        - **Interactive Deployment:** Deliver a production-grade Streamlit web interface for risk prediction.
+        **Core Investigation Framework:**
+        $$\\text{Question} \\longrightarrow \\text{EDA} \\longrightarrow \\text{Hypothesis Test} \\longrightarrow \\text{Effect Size} \\longrightarrow \\text{ML Benchmark} \\longrightarrow \\text{Deployment}$$
         """)
         
     with col2:
-        st.subheader("📊 Dataset At A Glance")
-        if df is not None:
-            st.metric("Total Patient Records", f"{len(df):,}")
-            st.metric("Total Attributes", f"{df.shape[1]}")
-            st.metric("Predictor Features", f"{df.shape[1] - 2}")
-            target_prev = (df["has_heart_disease"].mean()) * 100
-            st.metric("Heart Disease Prevalence", f"{target_prev:.1f}%")
-        else:
-            st.warning("Raw dataset file not found in data/raw/")
+        st.subheader("🎯 Primary Scientific Contributions")
+        st.markdown("""
+        - **Data Audit ($N=9,000$):** Zero missing values, zero duplicates, moderate class imbalance (69.7% vs 30.3%).
+        - **6 Statistical Hypotheses:** Non-parametric tests with Benjamini-Hochberg FDR correction & effect sizes.
+        - **Multi-Perspective Feature Importance:** Comparison of Mutual Info, Gini Importance, and Permutation Importance.
+        - **6 Classifier Benchmark:** Zero-R, KNN, Decision Tree, Random Forest, Naive Bayes, and RBF SVM.
+        """)
 
 # ==========================================
 # PAGE 2 — DATASET EXPLORER
@@ -177,33 +221,30 @@ elif page == "2. Dataset Explorer":
     
     if df is not None:
         st.markdown("""
-        <div class="warning-box">
-        <strong>Dataset Size Requirement Audit (Section 5 Note):</strong><br>
-        The official Kaggle dataset <code>uditjain13/heart-disease-risk-2026</code> contains <strong>9,000 records</strong> and <strong>27 features</strong>.
-        No synthetic rows or fake records were fabricated to force 10,000 rows.
+        <div class="finding-box">
+        <strong>Dataset Audit Note (Section 5 Requirement):</strong><br>
+        Audited dataset <code>uditjain13/heart-disease-risk-2026</code> contains <strong>9,000 patient records</strong> and <strong>27 columns</strong> (1 identifier <code>patient_id</code>, 25 feature attributes, 1 binary target <code>has_heart_disease</code>).
         </div>
         """, unsafe_allow_html=True)
         
-        st.subheader("Preview Raw Dataset")
-        rows_to_show = st.slider("Number of records to display", 5, 100, 10)
-        st.dataframe(df.head(rows_to_show), use_container_width=True)
+        tab1, tab2, tab3 = st.tabs(["Preview Raw Data", "Data Dictionary & Types", "Summary Statistics"])
         
-        col1, col2 = st.columns(2)
-        with col1:
-            st.subheader("Data Types & Missing Value Audit")
-            null_audit = pd.DataFrame({
-                "Column": df.columns,
+        with tab1:
+            rows_to_show = st.slider("Select row count to display", 5, 100, 10)
+            st.dataframe(df.head(rows_to_show), width="stretch")
+            
+        with tab2:
+            dtype_df = pd.DataFrame({
+                "Column Name": df.columns,
                 "Data Type": df.dtypes.astype(str),
                 "Missing Values": df.isnull().sum(),
-                "Unique Values": df.nunique()
+                "Unique Values": df.nunique(),
+                "Sample Value": [df[c].iloc[0] for c in df.columns]
             })
-            st.dataframe(null_audit, use_container_width=True)
+            st.dataframe(dtype_df, width="stretch")
             
-        with col2:
-            st.subheader("Summary Statistics (Numerical)")
-            st.dataframe(df.describe().T[["mean", "std", "min", "50%", "max"]], use_container_width=True)
-    else:
-        st.error("Dataset not loaded.")
+        with tab3:
+            st.dataframe(df.describe().T[["mean", "std", "min", "25%", "50%", "75%", "max"]], width="stretch")
 
 # ==========================================
 # PAGE 3 — EDA DASHBOARD
@@ -211,107 +252,127 @@ elif page == "2. Dataset Explorer":
 elif page == "3. EDA Dashboard":
     st.title("📊 Exploratory Data Analysis (EDA)")
     
-    fig_target = FIGURES_DIR / "target_distribution.png"
-    fig_corr = FIGURES_DIR / "correlation_matrix.png"
-    fig_dist = FIGURES_DIR / "feature_distributions.png"
+    tab1, tab2, tab3, tab4 = st.tabs(["Univariate & Target", "Bivariate Panels", "Correlation Matrix", "PCA Dimensionality Reduction"])
     
-    if fig_target.exists():
-        st.subheader("Target Variable Audit (Class Balance)")
-        st.image(str(fig_target), use_container_width=True)
-        st.caption("Figure 1: Target variable distribution showing ~30.3% positive class prevalence.")
-        
-    if fig_corr.exists():
-        st.subheader("Top Clinical Feature Correlations")
-        st.image(str(fig_corr), use_container_width=True)
-        st.caption("Figure 2: Pearson correlation matrix highlighting top clinical risk drivers.")
-        
-    if fig_dist.exists():
-        st.subheader("Clinical Biomarker Distributions Stratified by Target Class")
-        st.image(str(fig_dist), use_container_width=True)
-        st.caption("Figure 3: Density plots comparing key clinical markers between diseased and healthy patients.")
+    with tab1:
+        fig1 = FIGURES_DIR / "target_distribution.png"
+        fig3 = FIGURES_DIR / "feature_distributions.png"
+        if fig1.exists():
+            st.image(str(fig1), width="stretch")
+        if fig3.exists():
+            st.image(str(fig3), width="stretch")
+            
+    with tab2:
+        fig_biv = FIGURES_DIR / "bivariate_panel.png"
+        if fig_biv.exists():
+            st.image(str(fig_biv), width="stretch")
+            
+    with tab3:
+        fig2 = FIGURES_DIR / "correlation_matrix.png"
+        if fig2.exists():
+            st.image(str(fig2), width="stretch")
+            
+    with tab4:
+        fig_pca = FIGURES_DIR / "pca_bivariate_scatter.png"
+        if fig_pca.exists():
+            st.image(str(fig_pca), width="stretch")
+            st.caption("Figure: 2D Principal Component Analysis (PCA) projection of continuous clinical biomarker space.")
 
 # ==========================================
 # PAGE 4 — STATISTICAL ANALYSIS
 # ==========================================
-elif page == "4. Statistical Analysis":
-    st.title("🧪 Statistical Hypothesis Testing")
+elif page == "4. Statistical Analysis (Hypotheses)":
+    st.title("🧪 Statistical Hypothesis Testing Suite")
     st.markdown("""
-    Rigorous statistical tests were conducted to test significant associations between clinical features and heart disease risk ($\alpha = 0.05$).
+    Rigorous statistical tests conducted with significance threshold $\\alpha = 0.05$.
+    Includes Benjamini-Hochberg False Discovery Rate (FDR) multiple testing corrections and practical effect sizes.
     """)
     
-    if df is not None:
-        st.subheader("1. Continuous Clinical Attributes (Mann-Whitney U Test)")
-        num_cols = ["age", "st_depression", "max_heart_rate_achieved", "ldl", "hdl", "hba1c", "resting_bp_systolic", "exercise_minutes_per_week"]
-        
-        mw_results = []
-        for col in num_cols:
-            group0 = df[df["has_heart_disease"] == 0][col]
-            group1 = df[df["has_heart_disease"] == 1][col]
-            stat_val, p_val = stats.mannwhitneyu(group0, group1, alternative="two-sided")
-            mw_results.append({
-                "Clinical Feature": col,
-                "Mean (No Disease)": round(group0.mean(), 2),
-                "Mean (Heart Disease)": round(group1.mean(), 2),
-                "U Statistic": round(stat_val, 1),
-                "p-value": "< 0.0001" if p_val < 0.0001 else f"{p_val:.4f}",
-                "Significant?": "Yes (p < 0.05)" if p_val < 0.05 else "No"
-            })
-        st.table(pd.DataFrame(mw_results))
-        
-        st.subheader("2. Categorical & Lifestyle Attributes (Chi-Square Test of Independence)")
-        cat_cols = ["sex", "chest_pain_type", "exercise_induced_angina", "family_history", "smoker_status", "wearable_owner"]
-        
-        chi2_results = []
-        for col in cat_cols:
-            contingency = pd.crosstab(df[col], df["has_heart_disease"])
-            chi2, p_val, dof, _ = stats.chi2_contingency(contingency)
-            chi2_results.append({
-                "Categorical Feature": col,
-                "Chi-Square Stat ($\chi^2$)": round(chi2, 2),
-                "Degrees of Freedom": dof,
-                "p-value": "< 0.0001" if p_val < 0.0001 else f"{p_val:.4f}",
-                "Significant?": "Yes (p < 0.05)" if p_val < 0.05 else "No"
-            })
-        st.table(pd.DataFrame(chi2_results))
+    if stats_data:
+        for h in stats_data:
+            with st.expander(f"📌 {h['id']}: {h['question']}", expanded=True):
+                col1, col2 = st.columns([3, 1])
+                with col1:
+                    st.write(f"**H0:** {h['h0']}")
+                    st.write(f"**H1:** {h['h1']}")
+                    st.write(f"**Test Selected:** {h['test']} (Reason: {h['reason']})")
+                    st.write(f"**Plain Language Interpretation:** {h['interpretation']}")
+                    st.write(f"**Data Mining Implication:** {h['dm_implication']}")
+                with col2:
+                    st.metric("Test Statistic", f"{h['statistic']}")
+                    p_val_display = "< 0.0001" if h['p_value_raw'] < 0.0001 else f"{h['p_value_raw']:.4f}"
+                    st.metric("p-value (Raw)", p_val_display)
+                    st.metric(f"Effect Size ({h['effect_size_type']})", f"{h['effect_size_val']}")
+                    st.markdown(f'<span class="badge-reject">{h["decision_raw"]}</span> <span class="badge-fdr">FDR Sig: {h["significant_fdr"]}</span>', unsafe_allow_html=True)
+                    
+        st.markdown("---")
+        st.subheader("Summary Table of Statistical Hypotheses")
+        stat_summary_df = pd.DataFrame([
+            {
+                "ID": h["id"],
+                "Test": h["test"],
+                "Statistic": h["statistic"],
+                "Raw p-value": "< 0.0001" if h["p_value_raw"] < 0.0001 else f"{h['p_value_raw']:.4f}",
+                "FDR p-value": "< 0.0001" if h["p_value_fdr"] < 0.0001 else f"{h['p_value_fdr']:.4f}",
+                "Effect Size": f"{h['effect_size_type']} = {h['effect_size_val']}",
+                "Decision": h["decision_raw"]
+            } for h in stats_data
+        ])
+        st.table(stat_summary_df)
 
 # ==========================================
-# PAGE 5 — MODEL COMPARISON
+# PAGE 5 — FEATURE IMPORTANCE COMPARISON
 # ==========================================
-elif page == "5. Model Comparison":
+elif page == "5. Feature Importance Comparison":
+    st.title("⚖️ Multi-Perspective Feature Importance")
+    st.markdown("""
+    Comparing 4 distinct perspectives of feature importance:
+    1. **Mutual Information:** Information-theoretic dependency.
+    2. **Tree Gini Importance:** Random Forest impurity reduction.
+    3. **Permutation Importance:** Out-of-fold performance drop on test set.
+    4. **Correlation Magnitude:** Bivariate linear correlation magnitude.
+    """)
+    
+    fig_fic = FIGURES_DIR / "feature_importance_comp.png"
+    if fig_fic.exists():
+        st.image(str(fig_fic), width="stretch")
+        
+    if fi_data:
+        st.subheader("Normalized Feature Importance Rankings Table")
+        st.dataframe(pd.DataFrame(fi_data), width="stretch")
+
+# ==========================================
+# PAGE 6 — MODEL BENCHMARK
+# ==========================================
+elif page == "6. Model Benchmark & Trade-offs":
     st.title("🤖 Supervised Classification Model Benchmark")
     
     if comparison_df is not None:
-        st.subheader("Performance Comparison Table (Test Set)")
-        st.dataframe(comparison_df, use_container_width=True)
+        st.subheader("Supervised Classifier Comparison (Test Set, N = 1,800)")
+        st.dataframe(comparison_df, width="stretch")
         
         if model_metadata:
-            st.success(f"**Best Performing Model Identified:** {model_metadata.get('best_model_name')} "
-                       f"(ROC-AUC: {model_metadata.get('test_metrics', {}).get('ROC-AUC')})")
+            st.success(f"**Best Model:** {model_metadata.get('best_model_name')} "
+                       f"(Accuracy: {model_metadata.get('test_metrics', {}).get('Accuracy')}, "
+                       f"ROC-AUC: {model_metadata.get('test_metrics', {}).get('ROC-AUC')})")
             
         fig_roc = FIGURES_DIR / "roc_curves.png"
         fig_cm = FIGURES_DIR / "confusion_matrices.png"
-        fig_fi = FIGURES_DIR / "feature_importance.png"
         
         col1, col2 = st.columns(2)
         with col1:
             if fig_roc.exists():
                 st.subheader("ROC Curves Comparison")
-                st.image(str(fig_roc), use_container_width=True)
+                st.image(str(fig_roc), width="stretch")
         with col2:
-            if fig_fi.exists():
-                st.subheader("Random Forest Feature Importances")
-                st.image(str(fig_fi), use_container_width=True)
-                
-        if fig_cm.exists():
-            st.subheader("Confusion Matrix Grid across 6 Models")
-            st.image(str(fig_cm), use_container_width=True)
-    else:
-        st.info("Run `python scripts/train_pipeline.py` to generate model benchmark artifacts.")
+            if fig_cm.exists():
+                st.subheader("Confusion Matrix Grid")
+                st.image(str(fig_cm), width="stretch")
 
 # ==========================================
-# PAGE 6 — HEART DISEASE RISK PREDICTION
+# PAGE 7 — HEART DISEASE RISK PREDICTOR
 # ==========================================
-elif page == "6. Heart Disease Risk Prediction":
+elif page == "7. Heart Disease Risk Predictor":
     st.title("🫀 Patient Heart Disease Risk Predictor")
     
     st.markdown("""
@@ -365,42 +426,21 @@ elif page == "6. Heart Disease Risk Prediction":
             submit_btn = st.form_submit_button("🔍 Predict Heart Disease Risk")
             
         if submit_btn:
-            # Construct patient DataFrame
             patient_dict = {
-                "age": [age],
-                "sex": [sex],
-                "resting_bp_systolic": [sys_bp],
-                "resting_bp_diastolic": [dia_bp],
-                "cholesterol_total": [chol_total],
-                "hdl": [hdl],
-                "ldl": [ldl],
-                "triglycerides": [triglycerides],
-                "fasting_blood_sugar": [fbs],
-                "hba1c": [hba1c],
-                "bmi": [bmi],
-                "resting_heart_rate": [resting_hr],
-                "max_heart_rate_achieved": [max_hr],
-                "chest_pain_type": [cp_type],
-                "exercise_induced_angina": [ex_angina],
-                "st_depression": [st_dep],
-                "family_history": [family_hist],
-                "smoker_status": [smoker],
-                "alcohol_units_per_week": [alcohol],
-                "exercise_minutes_per_week": [exercise_min],
-                "sleep_hours": [sleep_hrs],
-                "stress_score": [stress],
-                "wearable_owner": [wearable],
-                "daily_steps": [daily_steps],
-                "diet_quality_score": [diet_score]
+                "age": [age], "sex": [sex], "resting_bp_systolic": [sys_bp], "resting_bp_diastolic": [dia_bp],
+                "cholesterol_total": [chol_total], "hdl": [hdl], "ldl": [ldl], "triglycerides": [triglycerides],
+                "fasting_blood_sugar": [fbs], "hba1c": [hba1c], "bmi": [bmi], "resting_heart_rate": [resting_hr],
+                "max_heart_rate_achieved": [max_hr], "chest_pain_type": [cp_type], "exercise_induced_angina": [ex_angina],
+                "st_depression": [st_dep], "family_history": [family_hist], "smoker_status": [smoker],
+                "alcohol_units_per_week": [alcohol], "exercise_minutes_per_week": [exercise_min],
+                "sleep_hours": [sleep_hrs], "stress_score": [stress], "wearable_owner": [wearable],
+                "daily_steps": [daily_steps], "diet_quality_score": [diet_score]
             }
             patient_df = pd.DataFrame(patient_dict)
-            
-            # Apply feature engineering
             patient_df["cholesterol_hdl_ratio"] = patient_df["cholesterol_total"] / np.maximum(patient_df["hdl"], 1.0)
             patient_df["pulse_pressure"] = patient_df["resting_bp_systolic"] - patient_df["resting_bp_diastolic"]
             patient_df["mean_arterial_pressure"] = patient_df["resting_bp_diastolic"] + (patient_df["pulse_pressure"] / 3.0)
             
-            # Transform and Predict
             patient_proc = preprocessor_pipeline.transform(patient_df)
             pred_class = int(best_model.predict(patient_proc)[0])
             
@@ -410,37 +450,52 @@ elif page == "6. Heart Disease Risk Prediction":
                 pred_prob = 1.0 if pred_class == 1 else 0.0
                 
             st.markdown("---")
-            st.subheader("🎯 Risk Prediction Result")
-            
             res_col1, res_col2 = st.columns(2)
             with res_col1:
                 if pred_class == 1:
                     st.error(f"### ⚠️ High Heart Disease Risk Predicted\nEstimated Risk Probability: **{pred_prob:.1%}**")
                 else:
                     st.success(f"### ✅ Low Heart Disease Risk Predicted\nEstimated Risk Probability: **{pred_prob:.1%}**")
-                    
             with res_col2:
                 st.metric("Model Selected", model_metadata.get("best_model_name", "Best Model"))
-                st.metric("Model ROC-AUC Score", f"{model_metadata.get('test_metrics', {}).get('ROC-AUC', 0.0):.3f}")
-    else:
-        st.error("Model artifacts not loaded. Please execute `python scripts/train_pipeline.py` first.")
+                st.metric("Model ROC-AUC", f"{model_metadata.get('test_metrics', {}).get('ROC-AUC', 0.0):.3f}")
 
 # ==========================================
-# PAGE 7 — ABOUT & CONTRIBUTIONS
+# PAGE 8 — KEY DISCOVERIES & FINDINGS
 # ==========================================
-elif page == "7. About & Contributions":
+elif page == "8. Key Discoveries & Findings":
+    st.title("💡 Key Empirical Findings & Discoveries")
+    st.markdown("Structured analytical discoveries synthesized from statistical tests, EDA, and Machine Learning models:")
+    
+    if findings_data:
+        for f in findings_data:
+            with st.container():
+                st.markdown(f"### 🔍 {f['title']}")
+                st.markdown(f"""
+                - **Research Question:** *{f['question']}*
+                - **Analytical Method:** {f['analysis']}
+                - **Empirical Result:** **{f['result']}** ({f['effect_size']})
+                - **Clinical & Statistical Interpretation:** {f['interpretation']}
+                - **Data Mining Implication:** `{f['dm_implication']}`
+                """)
+                st.markdown("---")
+
+# ==========================================
+# PAGE 9 — ABOUT & STUDENT MATRIX
+# ==========================================
+elif page == "9. About & Student Matrix":
     st.title("ℹ️ About & Student Contribution Matrix")
     
     st.markdown("""
     > ⚠️ **DEMONSTRATION GIT WORKFLOW NOTICE**  
-    > In this educational sample repository, a **SINGLE GitHub account** was used to publish the project.
-    > The student codes `AISD05`, `SIAD19`, and `RSD20` represent **simulated contributors** used to demonstrate how a multi-student team structures Git branches and commit messages.
-    > In an actual student project, **every student must use their own GitHub account**.
+    > Published using **ONE GitHub account** for reference/demonstration purposes.
+    > The student codes `AISD05`, `SIAD19`, and `RSD20` represent **simulated contributors**.
+    > In actual student mini-projects, **each student must use their own GitHub account**.
     """)
     
     st.subheader("Simulated Student Contribution Matrix")
     contrib_data = [
-        {"Student Code": "AISD05", "Responsibility Area": "Data Acquisition, Quality Audit, EDA, Statistical Testing", "Git Branch": "feature/AISD05-eda"},
+        {"Student Code": "AISD05", "Responsibility Area": "Dataset Acquisition, Quality Audit, EDA, Hypothesis Testing Suite", "Git Branch": "feature/AISD05-eda"},
         {"Student Code": "SIAD19", "Responsibility Area": "Preprocessing Pipeline, ML Models (6 Algorithms), CV & GridSearch", "Git Branch": "feature/SIAD19-modeling"},
         {"Student Code": "RSD20", "Responsibility Area": "Streamlit Web App, Predictor UI, Unit Tests, LaTeX Report & PDF", "Git Branch": "feature/RSD20-streamlit"}
     ]
@@ -449,8 +504,8 @@ elif page == "7. About & Contributions":
     st.subheader("Software Stack & Dependencies")
     st.markdown("""
     - **Language:** Python 3.13 / 3.10
-    - **Machine Learning:** `scikit-learn`, `scipy`, `numpy`, `pandas`
-    - **Data Fetching:** `kagglehub`
+    - **Machine Learning:** `scikit-learn`, `scipy`, `numpy`, `pandas`, `pyarrow`
+    - **Data Acquisition:** `kagglehub`
     - **Visualization:** `matplotlib`, `seaborn`
     - **Web Framework:** `streamlit`
     - **Report Generation:** LaTeX (`pdflatex`)

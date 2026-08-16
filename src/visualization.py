@@ -12,6 +12,7 @@ import numpy as np
 from pathlib import Path
 from typing import Dict, Any
 
+from sklearn.decomposition import PCA
 from sklearn.metrics import roc_curve, auc, confusion_matrix
 from src.utils import FIGURES_DIR, NUMERICAL_COLS, TARGET_COL, load_raw_data
 
@@ -111,6 +112,93 @@ def plot_feature_distributions(df: pd.DataFrame = None, save: bool = True) -> pl
         fig.savefig(FIGURES_DIR / "feature_distributions.png", dpi=300, bbox_inches="tight")
     return fig
 
+def plot_bivariate_panel(df: pd.DataFrame = None, save: bool = True) -> plt.Figure:
+    """Plot 2x2 panel boxplots of top clinical predictors."""
+    if df is None:
+        df = load_raw_data()
+        
+    fig, axes = plt.subplots(2, 2, figsize=(11, 8))
+    axes = axes.flatten()
+    
+    predictors = ["st_depression", "max_heart_rate_achieved", "ldl", "age"]
+    labels = ["ST Depression (mm)", "Max Heart Rate (bpm)", "LDL Cholesterol (mg/dL)", "Age (years)"]
+    
+    for i, (pred, label) in enumerate(zip(predictors, labels)):
+        ax = axes[i]
+        sns.boxplot(data=df, x=TARGET_COL, y=pred, hue=TARGET_COL, palette=["#2b5c8f", "#d95f02"], ax=ax, legend=False)
+        ax.set_xticklabels(["No Disease", "Heart Disease"])
+        ax.set_title(label, fontsize=11, fontweight="bold")
+        ax.set_xlabel("")
+        ax.set_ylabel("")
+        
+    plt.suptitle("Bivariate Boxplots of Key Risk Factors", fontsize=14, fontweight="bold", y=1.02)
+    plt.tight_layout()
+    
+    if save:
+        fig.savefig(FIGURES_DIR / "bivariate_panel.png", dpi=300, bbox_inches="tight")
+    return fig
+
+def plot_pca_scatter(save: bool = True) -> plt.Figure:
+    """Plot 2D PCA projection of clinical patient feature space."""
+    from src.utils import DATA_PROCESSED
+    X_train_path = DATA_PROCESSED / "X_train.csv"
+    y_train_path = DATA_PROCESSED / "y_train.csv"
+    
+    if not X_train_path.exists():
+        return None
+        
+    X_train = pd.read_csv(X_train_path)
+    y_train = pd.read_csv(y_train_path).squeeze()
+    
+    pca = PCA(n_components=2, random_state=42)
+    X_pca = pca.fit_transform(X_train)
+    var_exp = pca.explained_variance_ratio_
+    
+    fig, ax = plt.subplots(figsize=(8.5, 6))
+    scatter = ax.scatter(X_pca[:, 0], X_pca[:, 1], c=y_train, cmap=matplotlib.colors.ListedColormap(["#2b5c8f", "#d95f02"]),
+                         alpha=0.6, s=15, edgecolors="none")
+    
+    ax.set_xlabel(f"Principal Component 1 ({var_exp[0]:.1%} var)", fontsize=11, fontweight="bold")
+    ax.set_ylabel(f"Principal Component 2 ({var_exp[1]:.1%} var)", fontsize=11, fontweight="bold")
+    ax.set_title(f"PCA 2D Projection of Patient Feature Space (Cumulative Var: {sum(var_exp):.1%})", fontsize=12, fontweight="bold", pad=10)
+    
+    # Custom legend
+    handles = [plt.Line2D([0], [0], marker='o', color='w', markerfacecolor=c, markersize=8) for c in ["#2b5c8f", "#d95f02"]]
+    ax.legend(handles, ["No Disease (0)", "Heart Disease (1)"], loc="best", frameon=True)
+    
+    if save:
+        fig.savefig(FIGURES_DIR / "pca_bivariate_scatter.png", dpi=300, bbox_inches="tight")
+    return fig
+
+def plot_feature_importance_comparison(save: bool = True) -> plt.Figure:
+    """Plot side-by-side comparison of Gini vs Permutation vs Mutual Information."""
+    from src.utils import PROJECT_ROOT
+    fi_path = PROJECT_ROOT / "results" / "feature_importances.csv"
+    
+    if not fi_path.exists():
+        return None
+        
+    fi_df = pd.read_csv(fi_path).head(10)
+    
+    fig, ax = plt.subplots(figsize=(10, 6.5))
+    x = np.arange(len(fi_df))
+    width = 0.25
+    
+    ax.barh(x - width, fi_df["MI Normalized"], width, label="Mutual Information", color="#2b5c8f")
+    ax.barh(x, fi_df["Gini Normalized"], width, label="Random Forest Gini", color="#7570b3")
+    ax.barh(x + width, fi_df["Permutation Normalized"], width, label="Permutation Importance", color="#d95f02")
+    
+    ax.set_yticks(x)
+    ax.set_yticklabels(fi_df["Feature"], fontsize=10)
+    ax.invert_yaxis()
+    ax.set_xlabel("Normalized Relative Importance", fontsize=11, fontweight="bold")
+    ax.set_title("Multi-Perspective Feature Importance Comparison (Top 10 Attributes)", fontsize=13, fontweight="bold", pad=12)
+    ax.legend(loc="lower right", frameon=True)
+    
+    if save:
+        fig.savefig(FIGURES_DIR / "feature_importance_comp.png", dpi=300, bbox_inches="tight")
+    return fig
+
 def plot_roc_curves(best_estimators: Dict[str, Any], X_test: pd.DataFrame, y_test: pd.Series, save: bool = True) -> plt.Figure:
     """Plot ROC curves for all 6 models."""
     fig, ax = plt.subplots(figsize=(8, 6.5))
@@ -163,32 +251,4 @@ def plot_confusion_matrices(best_estimators: Dict[str, Any], X_test: pd.DataFram
     
     if save:
         fig.savefig(FIGURES_DIR / "confusion_matrices.png", dpi=300, bbox_inches="tight")
-    return fig
-
-def plot_feature_importance(rf_model: Any, feature_names: list, save: bool = True) -> plt.Figure:
-    """Plot Random Forest Feature Importances."""
-    if not hasattr(rf_model, "feature_importances_"):
-        return None
-        
-    importances = rf_model.feature_importances_
-    fi_df = pd.DataFrame({
-        "Feature": feature_names,
-        "Importance": importances
-    }).sort_values(by="Importance", ascending=False).head(15)
-    
-    fig, ax = plt.subplots(figsize=(9, 6))
-    sns.barplot(data=fi_df, x="Importance", y="Feature", palette="Blues_r", ax=ax)
-    ax.set_title("Top 15 Predictive Features (Random Forest Importance)", fontsize=13, fontweight="bold", pad=12)
-    ax.set_xlabel("Gini Importance Score", fontsize=11, fontweight="bold")
-    ax.set_ylabel("Attribute", fontsize=11, fontweight="bold")
-    
-    for p in ax.patches:
-        width = p.get_width()
-        ax.annotate(f"{width:.3f}",
-                    xy=(width, p.get_y() + p.get_height() / 2),
-                    xytext=(4, 0), textcoords="offset points",
-                    ha="left", va="center", fontsize=9)
-        
-    if save:
-        fig.savefig(FIGURES_DIR / "feature_importance.png", dpi=300, bbox_inches="tight")
     return fig

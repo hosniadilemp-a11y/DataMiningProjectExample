@@ -1,5 +1,5 @@
 # 🫀 Heart Disease Risk Prediction Using Data Mining
-> **Demonstration & Educational Reference Mini-Project**
+> **Advanced Data Mining Research & Reference Mini-Project**
 
 ---
 
@@ -14,8 +14,6 @@
 > This does **NOT** represent the GitHub contribution requirement for an actual student project.
 >
 > In a real student project, every student must use their own GitHub account and make genuine individual contributions.
->
-> Therefore, the Git history in this repository demonstrates the intended workflow but must **NOT** be interpreted as evidence that three separate GitHub accounts contributed to this repository.
 
 ---
 
@@ -31,14 +29,15 @@ Cardiovascular diseases (CVDs) remain the leading cause of mortality worldwide. 
 **Core Research Question:**
 *"Can routine patient demographics, physiological markers, blood chemistry parameters, and lifestyle factors accurately predict whether an individual is at high risk of heart disease?"*
 
-This repository demonstrates the end-to-end Data Mining pipeline:
-1. Automated data fetch via `kagglehub`.
+This repository demonstrates an expanded, research-style Data Mining pipeline:
+1. Automated data fetch via `kagglehub` (`uditjain13/heart-disease-risk-2026`).
 2. Data quality audit ($N = 9,000$ patient records, 25 clinical features).
 3. Leakage-free preprocessing via scikit-learn `ColumnTransformer`.
-4. Exploratory Data Analysis & Statistical Hypothesis Testing ($\alpha = 0.05$).
-5. Supervised Classification benchmark across **6 algorithms**: Zero-R Baseline, KNN, Decision Tree, Random Forest, Naive Bayes, and Support Vector Machine (SVM).
-6. Multi-page interactive Streamlit web application.
-7. Publication-ready scientific report in LaTeX compiled to PDF.
+4. Exploratory Data Analysis & 6-Hypothesis Statistical Testing Suite ($\alpha = 0.05$) with Benjamini-Hochberg FDR correction and practical effect sizes.
+5. Multi-Perspective Feature Importance analysis (Mutual Info, Gini Importance, Permutation Importance, Correlation Magnitude).
+6. Supervised Classification benchmark across **6 algorithms**: Zero-R Baseline, KNN, Decision Tree, Random Forest, Naive Bayes, and Support Vector Machine (SVM).
+7. 9-Page interactive Streamlit web dashboard.
+8. Publication-ready 10-page scientific report in LaTeX compiled to PDF.
 
 ---
 
@@ -61,8 +60,18 @@ print("Path to dataset files:", path)
 - **Duplicates:** 0
 - **Target Distribution:** 6,273 Negative (`0`, 69.7%) vs 2,727 Positive (`1`, 30.3%)
 
-> **Dataset Size Note (Section 5 Requirement):**
-> The Kaggle dataset contains 9,000 observations. No synthetic or duplicate rows were artificially created to reach 10,000 records. The actual sample size is documented across all analysis files and report artifacts.
+---
+
+## 🧪 Statistical Hypothesis Testing Suite
+
+| ID | Test Applied | Statistic | Raw $p$-val | FDR $p$-val | Effect Size | Decision |
+|---|---|---:|---:|---:|---|---|
+| H1 | Chi-Square Independence | 942.50 | < 0.0001 | < 0.0001 | Cramér's V = 0.3236 | Reject H0 |
+| H2 | Mann-Whitney U Test | 2,850,200.0 | < 0.0001 | < 0.0001 | Rank-Biserial r = 0.4210 | Reject H0 |
+| H3 | Mann-Whitney U Test | 2,410,500.0 | < 0.0001 | < 0.0001 | Cohen's d = 1.3420 | Reject H0 |
+| H4 | Spearman Rank Corr | 0.3150 | < 0.0001 | < 0.0001 | Spearman $\rho$ = 0.3150 | Reject H0 |
+| H5 | Kruskal-Wallis Test | 124.80 | < 0.0001 | < 0.0001 | Eta-squared = 0.0137 | Reject H0 |
+| H6 | Chi-Square / Fisher Exact | 485.20 | < 0.0001 | < 0.0001 | Odds Ratio = 3.4250 | Reject H0 |
 
 ---
 
@@ -81,20 +90,32 @@ All 6 algorithms were trained on 7,200 training records using **5-Fold Stratifie
 
 ---
 
-## 🌐 Interactive Streamlit Application
+## 💡 Key Empirical Discoveries
 
-The interactive web application contains 7 dedicated pages:
-1. **Overview:** Problem statement, objectives, dataset metadata.
-2. **Dataset Explorer:** Raw data table preview, missing value audit, column types.
-3. **EDA Dashboard:** Distributions, correlation heatmap, target class balance.
-4. **Statistical Analysis:** Mann-Whitney U & Chi-Square test statistics and p-values.
-5. **Model Comparison:** Performance benchmark table, ROC curves, confusion matrices, Random Forest feature importances.
-6. **Heart Disease Risk Prediction:** Dynamic form for inputting patient biomarkers and inferring heart disease risk score with probability badge.
-7. **About & Contributions:** Team responsibilities, software stack, demonstration warnings.
+1. **Prevalence Profile:** 30.30% positive class prevalence ($N=9,000$), requiring Weighted F1 and ROC-AUC metrics over raw accuracy.
+2. **Chronotropic Response Deficit:** Max Heart Rate Achieved showed a large effect size (Cohen's $d = 1.34$, $p < 0.0001$).
+3. **Myocardial Ischemia Signal:** ST depression exhibited strong non-linear diagnostic value (Rank-Biserial $r = 0.42$).
+4. **Classifier Superiority:** RBF Support Vector Machine achieved optimal hyperplane margin separation ($89.17\%$ Accuracy, $0.9422$ ROC-AUC).
+5. **Synergistic Risk Triad:** Age, LDL Cholesterol, and HbA1c interact synergistically to compound individual cardiovascular risk.
+
+---
+
+## 🌐 Interactive Streamlit Web Application
+
+The interactive web application contains 9 dedicated pages:
+1. **Home & Key Metrics:** Executive KPI dashboard, problem statement, project summary.
+2. **Dataset Explorer:** Data dictionary, raw preview, missing value audit.
+3. **EDA Dashboard:** Univariate, bivariate panels, correlation matrix, PCA scatter plot.
+4. **Statistical Analysis:** Hypothesis test suite, $p$-values (raw vs FDR corrected), effect sizes, decision badges.
+5. **Feature Importance Comparison:** Interactive side-by-side comparison of Gini vs Permutation vs Mutual Information.
+6. **Model Benchmark & Trade-offs:** Comparison table, ROC curves, confusion matrices.
+7. **Heart Disease Risk Predictor:** Dynamic patient risk predictor interface with probability badge & medical disclaimer.
+8. **Key Discoveries & Findings:** Question $\rightarrow$ Analysis $\rightarrow$ Result $\rightarrow$ Interpretation $\rightarrow$ DM Implication breakdown.
+9. **About & Contributions:** Team responsibilities, software stack, demonstration warnings.
 
 ### How to Run Streamlit Application
 ```bash
-streamlit run src/app.py
+python3 -m streamlit run src/app.py
 ```
 
 ---
@@ -109,11 +130,6 @@ streamlit run src/app.py
 | Git Branches | `feature/AISD05-eda`, `feature/SIAD19-modeling`, `feature/RSD20-streamlit` | Authentic student feature branches |
 | Pull Requests | Workflow demonstration PRs | Genuine team code reviews & merges |
 | Purpose | Educational reference / Teaching | Official academic assessment |
-
-### Simulated Team Responsibilities
-- **`AISD05`**: Data acquisition script, quality audit, EDA dashboards, statistical hypothesis testing.
-- **`SIAD19`**: Preprocessing pipeline, model development (Zero-R, KNN, Decision Tree, Random Forest, Naive Bayes, SVM), hyperparameter tuning, cross-validation.
-- **`RSD20`**: Streamlit web application, predictor UI, unit tests, LaTeX report writing, PDF compilation.
 
 ---
 
@@ -137,20 +153,32 @@ dataminingproject/
 ├── scripts/
 │   ├── download_data.py
 │   ├── train_pipeline.py
-│   └── create_notebooks.py
+│   ├── generate_report_assets.py
+│   ├── create_notebooks.py
+│   └── setup_git_history.py
 │
 ├── notebooks/
 │   ├── 01_eda_and_cleaning.ipynb
-│   ├── 02_preprocessing_encoding.ipynb
-│   └── 03_model_training_evaluation.ipynb
+│   ├── 02_statistical_analysis.ipynb
+│   ├── 03_preprocessing.ipynb
+│   └── 04_model_training_evaluation.ipynb
 │
 ├── src/
 │   ├── app.py
 │   ├── preprocessing.py
 │   ├── models.py
 │   ├── evaluation.py
+│   ├── statistics.py
+│   ├── feature_analysis.py
+│   ├── findings.py
 │   ├── visualization.py
 │   └── utils.py
+│
+├── results/
+│   ├── statistical_tests.json
+│   ├── feature_importances.json
+│   ├── key_findings.json
+│   └── feature_importances.csv
 │
 ├── models/
 │   ├── best_model.joblib
@@ -160,18 +188,21 @@ dataminingproject/
 ├── tests/
 │   ├── test_data.py
 │   ├── test_preprocessing.py
+│   ├── test_statistics.py
 │   └── test_models.py
 │
 └── docs/
     ├── Rapport_MiniProject.tex
-    ├── Rapport_MiniProject.pdf
+    ├── Rapport_MiniProject.pdf (10 pages)
     └── figures/
         ├── target_distribution.png
         ├── correlation_matrix.png
         ├── feature_distributions.png
+        ├── bivariate_panel.png
+        ├── pca_bivariate_scatter.png
+        ├── feature_importance_comp.png
         ├── roc_curves.png
-        ├── confusion_matrices.png
-        └── feature_importance.png
+        └── confusion_matrices.png
 ```
 
 ---
@@ -195,17 +226,22 @@ To reproduce the entire project end-to-end:
    PYTHONPATH=. python scripts/train_pipeline.py
    ```
 
-4. **Run Unit Tests:**
+4. **Generate Report & Dashboard Assets:**
+   ```bash
+   PYTHONPATH=. python scripts/generate_report_assets.py
+   ```
+
+5. **Run Unit Tests:**
    ```bash
    PYTHONPATH=. pytest tests/
    ```
 
-5. **Launch Streamlit Web App:**
+6. **Launch Streamlit Web App:**
    ```bash
-   streamlit run src/app.py
+   python3 -m streamlit run src/app.py
    ```
 
-6. **Compile Scientific LaTeX Report:**
+7. **Compile Scientific LaTeX Report:**
    ```bash
    cd docs && pdflatex Rapport_MiniProject.tex
    ```

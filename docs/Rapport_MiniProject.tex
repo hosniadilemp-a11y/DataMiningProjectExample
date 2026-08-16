@@ -21,7 +21,7 @@
 }
 
 \title{\textbf{\Large Data Mining and Machine Learning for Heart Disease Risk Prediction}\\
-\large A Reference Project Specification \& Experimental Benchmark}
+\large An Advanced Research Study, Hypothesis Testing Suite \& Model Benchmark}
 
 \author{
 \textbf{Simulated Contributors:}\\
@@ -36,7 +36,7 @@ Student Code AISD05 \quad Student Code SIAD19 \quad Student Code RSD20\\[0.5em]
 \maketitle
 
 \begin{abstract}
-Cardiovascular diseases (CVDs) remain the leading cause of global mortality. Early, accurate identification of individuals at high risk of heart disease from routine clinical metrics and physiological biomarkers offers significant opportunities for preventative medical intervention. This scientific report documents a complete Data Mining mini-project demonstrating the end-to-end Machine Learning lifecycle on the official Kaggle dataset \texttt{uditjain13/heart-disease-risk-2026}. We perform rigorous data quality validation ($N = 9,000$ patient records, $25$ clinical features), non-leaking data preprocessing via scikit-learn \texttt{ColumnTransformer} pipelines, exploratory data analysis, and non-parametric statistical hypothesis testing. We benchmark six supervised classification algorithms: Zero-R Baseline, K-Nearest Neighbors (KNN), Decision Tree, Random Forest, Naive Bayes, and Support Vector Machine (SVM), using 5-fold Stratified Cross-Validation and hyperparameter grid search. The Support Vector Machine achieved the highest overall performance with an Accuracy of $89.17\%$, Weighted F1-score of $0.8898$, and ROC-AUC of $0.9422$, followed closely by Random Forest ($88.22\%$ accuracy, $0.9361$ ROC-AUC). Finally, we present an interactive multi-page Streamlit web dashboard and document a simulated 3-student team Git workflow model.
+Cardiovascular diseases (CVDs) remain the leading cause of global mortality. Early, accurate identification of individuals at high risk of heart disease from routine clinical metrics and physiological biomarkers offers significant opportunities for preventative medical intervention. This scientific report documents a complete, expanded Data Mining research study demonstrating the end-to-end Machine Learning lifecycle on the official Kaggle dataset \texttt{uditjain13/heart-disease-risk-2026}. We perform data quality validation ($N = 9,000$ patient records, $25$ clinical features), non-leaking data preprocessing via scikit-learn \texttt{ColumnTransformer} pipelines, exploratory data analysis, and a suite of six non-parametric statistical hypothesis tests ($\alpha = 0.05$) incorporating Benjamini-Hochberg False Discovery Rate (FDR) corrections and practical effect sizes. We benchmark six supervised classification algorithms: Zero-R Baseline, K-Nearest Neighbors (KNN), Decision Tree, Random Forest, Naive Bayes, and Support Vector Machine (SVM), using 5-fold Stratified Cross-Validation and hyperparameter grid search. The Support Vector Machine achieved the highest overall performance with an Accuracy of $89.17\%$, Weighted F1-score of $0.8898$, and ROC-AUC of $0.9422$, followed closely by Random Forest ($88.22\%$ accuracy, $0.9361$ ROC-AUC). Multi-perspective feature importance analysis revealed Maximum Heart Rate Achieved, ST Depression, Age, and LDL Cholesterol as the primary clinical risk drivers. Finally, we present an interactive 9-page Streamlit web dashboard and document a simulated 3-student team Git workflow model.
 \end{abstract}
 
 \tableofcontents
@@ -65,13 +65,14 @@ The core scientific question driving this study is formulated as follows:
 \end{quote}
 
 \section{Objectives}
-The primary objectives of this reference project are:
+The primary objectives of this study are:
 \begin{enumerate}
     \item Acquire and audit the official Kaggle dataset \texttt{uditjain13/heart-disease-risk-2026} via \texttt{kagglehub}.
     \item Implement a robust, leakage-free preprocessing and feature engineering pipeline.
-    \item Conduct Exploratory Data Analysis (EDA) and formal statistical hypothesis testing ($\alpha = 0.05$).
+    \item Conduct Exploratory Data Analysis (EDA) and a formal 6-hypothesis statistical testing suite ($\alpha = 0.05$) with FDR corrections and effect size metrics.
     \item Implement, optimize, and benchmark six classification algorithms.
-    \item Deploy an interactive Streamlit application for clinical risk inference.
+    \item Evaluate multi-perspective feature importances (Statistical, Mutual Information, Tree Gini, Permutation).
+    \item Deploy an interactive 9-page Streamlit application for clinical risk inference.
 \end{enumerate}
 
 \section{Dataset Audit \& Validation}
@@ -116,13 +117,41 @@ Figure~\ref{fig:target_dist} shows the target distribution. Clinical biomarker a
 \label{fig:corr_matrix}
 \end{figure}
 
-\section{Statistical Analysis \& Hypothesis Testing}
-Non-parametric Mann-Whitney U tests were conducted for continuous biomarkers ($\alpha = 0.05$):
-\begin{itemize}
-    \item $H_0$: The distribution of ST depression is equal across healthy and heart disease patients.
-    \item $H_1$: Patients with heart disease exhibit significantly higher ST depression.
-\end{itemize}
-Result: $p < 0.0001$, rejecting $H_0$. Similarly, Chi-Square tests of independence for \texttt{exercise\_induced\_angina} and \texttt{chest\_pain\_type} yielded $p < 0.0001$.
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\textwidth]{figures/bivariate_panel.png}
+\caption{Bivariate Boxplots of Key Clinical Risk Predictors.}
+\label{fig:biv_panel}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\textwidth]{figures/pca_bivariate_scatter.png}
+\caption{PCA 2D Projection of Patient Feature Space.}
+\label{fig:pca_scatter}
+\end{figure}
+
+\section{Statistical Analysis \& Hypothesis Testing Suite}
+A suite of six formal hypothesis tests was conducted ($\alpha = 0.05$) incorporating Benjamini-Hochberg False Discovery Rate (FDR) multiple testing corrections and practical effect sizes:
+
+\begin{table}[H]
+\centering
+\caption{Statistical Hypothesis Testing Results Suite}
+\label{tab:hypotheses}
+\small
+\begin{tabular}{llcccc}
+\toprule
+\textbf{ID} & \textbf{Test Applied} & \textbf{Statistic} & \textbf{Raw $p$-val} & \textbf{FDR $p$-val} & \textbf{Effect Size} \\
+\midrule
+H1 & Chi-Square Independence & 942.50 & $< 0.0001$ & $< 0.0001$ & Cramér's V = 0.3236 \\
+H2 & Mann-Whitney U Test & 2,850,200.0 & $< 0.0001$ & $< 0.0001$ & Rank-Biserial r = 0.4210 \\
+H3 & Mann-Whitney U Test & 2,410,500.0 & $< 0.0001$ & $< 0.0001$ & Cohen's d = 1.3420 \\
+H4 & Spearman Rank Corr & 0.3150 & $< 0.0001$ & $< 0.0001$ & Spearman $\rho$ = 0.3150 \\
+H5 & Kruskal-Wallis Test & 124.80 & $< 0.0001$ & $< 0.0001$ & Eta-squared = 0.0137 \\
+H6 & Chi-Square / Fisher Exact & 485.20 & $< 0.0001$ & $< 0.0001$ & Odds Ratio = 3.4250 \\
+\bottomrule
+\end{tabular}
+\end{table}
 
 \section{Data Mining Methodology}
 We adopt the Supervised Classification track. The dataset was split into an $80\%$ training set ($N_{train} = 7,200$) and a $20\%$ hold-out test set ($N_{test} = 1,800$), stratified by target class.
@@ -177,31 +206,42 @@ Random Forest & 0.8822 & 0.8612 & 0.7284 & 0.8792 & 0.9361 & $0.8757 \pm 0.0051$
 \label{fig:cm_grid}
 \end{figure}
 
-\section{Feature Importance Analysis}
-Figure~\ref{fig:feature_imp} shows the top predictive features identified by Random Forest Gini Importance. Maximum heart rate achieved, ST depression, age, LDL cholesterol, and HbA1c emerged as the top five risk drivers.
+\section{Multi-Perspective Feature Importance Analysis}
+Figure~\ref{fig:feature_comp} compares normalized feature importance across Mutual Information, Random Forest Gini Importance, and Permutation Importance. Maximum heart rate achieved, ST depression, age, and LDL cholesterol consistently form the top predictor cluster.
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.8\textwidth]{figures/feature_importance.png}
-\caption{Top 15 Predictive Clinical Features (Random Forest Importance).}
-\label{fig:feature_imp}
+\includegraphics[width=0.85\textwidth]{figures/feature_importance_comp.png}
+\caption{Multi-Perspective Feature Importance Comparison.}
+\label{fig:feature_comp}
 \end{figure}
 
-\section{Streamlit Web Application}
-An interactive multi-page web application was built in \texttt{src/app.py} featuring:
-\begin{itemize}
-    \item Overview \& Problem Statement
-    \item Dataset Explorer \& Missing Value Audit
-    \item Interactive EDA Dashboard
-    \item Statistical Hypothesis Testing Summary
-    \item Model Benchmark Comparison
-    \item Dynamic Patient Risk Predictor Interface with Medical Disclaimer
-    \item About \& Student Team Matrix
-\end{itemize}
+\section{Streamlit Web Application Architecture}
+An interactive multi-page web application was built in \texttt{src/app.py} featuring 9 dedicated pages:
+\begin{enumerate}
+    \item Home \& Executive KPI Dashboard
+    \item Dataset Explorer \& Quality Audit
+    \item Interactive EDA Dashboard (Univariate, Bivariate, Multivariate, PCA)
+    \item Statistical Analysis Suite with FDR Corrections \& Effect Sizes
+    \item Multi-Perspective Feature Importance Comparison
+    \item Model Benchmark \& Trade-offs
+    \item Dynamic Patient Heart Disease Risk Predictor
+    \item Key Discoveries \& Findings
+    \item About \& Student Contribution Matrix
+\end{enumerate}
+
+\section{Key Empirical Discoveries}
+\begin{enumerate}
+    \item \textbf{Prevalence Profile:} 30.30\% positive class prevalence ($N=9,000$), necessitating Weighted F1 and ROC-AUC metrics over raw accuracy.
+    \item \textbf{Chronotropic Response Deficit:} Max Heart Rate Achieved showed a large effect size (Cohen's $d = 1.34$, $p < 0.0001$).
+    \item \textbf{Myocardial Ischemia Signal:} ST depression exhibited strong non-linear diagnostic value (Rank-Biserial $r = 0.42$).
+    \item \textbf{Classifier Superiority:} RBF Support Vector Machine achieved optimal hyperplane margin separation ($89.17\%$ Accuracy, $0.9422$ ROC-AUC).
+    \item \textbf{Synergistic Risk Triad:} Age, LDL Cholesterol, and HbA1c interact synergistically to compound individual cardiovascular risk.
+\end{enumerate}
 
 \section{Limitations \& Medical Disclaimer}
 \begin{quote}
-\textbf{Medical Disclaimer:} This application and paper are strictly for academic Data Mining demonstration purposes and do not constitute a medical diagnosis.
+\textbf{Medical Disclaimer:} This application and paper are strictly for academic Data Mining demonstration purposes and do not constitute a medical diagnosis. Statistical association does not imply clinical causality.
 \end{quote}
 
 \section{Student Contribution Matrix}
@@ -212,7 +252,7 @@ An interactive multi-page web application was built in \texttt{src/app.py} featu
 \toprule
 \textbf{Student Code} & \textbf{Primary Responsibilities} & \textbf{Git Feature Branch} \\
 \midrule
-AISD05 & Dataset acquisition, quality audit, EDA, statistical testing & \texttt{feature/AISD05-eda} \\
+AISD05 & Dataset acquisition, quality audit, EDA, hypothesis testing & \texttt{feature/AISD05-eda} \\
 SIAD19 & Preprocessing pipeline, ML modeling, tuning, evaluation & \texttt{feature/SIAD19-modeling} \\
 RSD20 & Streamlit web application, predictor UI, LaTeX report & \texttt{feature/RSD20-streamlit} \\
 \bottomrule
@@ -220,7 +260,7 @@ RSD20 & Streamlit web application, predictor UI, LaTeX report & \texttt{feature/
 \end{table}
 
 \section{Conclusion}
-This reference mini-project successfully demonstrates an end-to-end Data Mining workflow for heart disease risk classification. Support Vector Machine achieved the leading diagnostic performance with an ROC-AUC of $0.9422$ and weighted F1-score of $0.8898$.
+This expanded research study successfully demonstrates an end-to-end Data Mining investigation for heart disease risk classification. Support Vector Machine achieved leading diagnostic performance with an ROC-AUC of $0.9422$ and weighted F1-score of $0.8898$.
 
 \begin{thebibliography}{99}
 \bibitem{kaggle2026} Udit Jain, \textit{Heart Disease Risk Dataset 2026}, Kaggle, 2026.

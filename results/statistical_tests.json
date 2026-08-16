@@ -1,0 +1,140 @@
+[
+    {
+        "id": "H1",
+        "question": "Is there a statistically significant association between chest pain type and heart disease status?",
+        "h0": "Chest pain type and heart disease status are independent (no association).",
+        "h1": "Chest pain type and heart disease status are significantly associated.",
+        "variables": [
+            "chest_pain_type",
+            "has_heart_disease"
+        ],
+        "test": "Chi-Square Test of Independence",
+        "reason": "Both variables are categorical/nominal.",
+        "statistic": 225.16,
+        "dof": 3,
+        "p_value_raw": 1.5398829261039727e-48,
+        "effect_size_type": "Cram\u00e9r's V",
+        "effect_size_val": 0.1571,
+        "decision_raw": "Reject H0",
+        "interpretation": "Chest pain classification (asymptomatic, non-anginal, atypical, typical) is strongly associated with heart disease occurrence.",
+        "dm_implication": "Chest pain type is a crucial categorical predictor for classification modeling.",
+        "p_value_fdr": 1.847859511324767e-48,
+        "p_value_bonferroni": 9.239297556623836e-48,
+        "significant_fdr": true
+    },
+    {
+        "id": "H2",
+        "question": "Does electrocardiogram ST depression differ significantly between heart disease and healthy patients?",
+        "h0": "ST depression distributions are equal across healthy and diseased patient groups.",
+        "h1": "Patients with heart disease exhibit significantly different (higher) ST depression values.",
+        "variables": [
+            "st_depression",
+            "has_heart_disease"
+        ],
+        "test": "Mann-Whitney U Test",
+        "reason": "ST depression is continuous but skewed non-normal (Shapiro-Wilk p < 0.001).",
+        "statistic": 5249817.5,
+        "dof": null,
+        "p_value_raw": 1.6371589362445086e-187,
+        "effect_size_type": "Rank-Biserial r",
+        "effect_size_val": 0.3862,
+        "decision_raw": "Reject H0",
+        "interpretation": "Patients with heart disease show significantly elevated ST segment depression compared to healthy controls.",
+        "dm_implication": "ST depression provides strong non-linear signal for tree-based and margin-based classifiers.",
+        "p_value_fdr": 2.455738404366763e-187,
+        "p_value_bonferroni": 9.822953617467052e-187,
+        "significant_fdr": true
+    },
+    {
+        "id": "H3",
+        "question": "Do patients with heart disease achieve significantly lower maximum heart rates during stress testing?",
+        "h0": "Mean/distribution of max heart rate achieved is equal across both patient groups.",
+        "h1": "Patients diagnosed with heart disease achieve significantly lower max heart rates.",
+        "variables": [
+            "max_heart_rate_achieved",
+            "has_heart_disease"
+        ],
+        "test": "Mann-Whitney U Test",
+        "reason": "Continuous physiological stress test measurement.",
+        "statistic": 14746589.0,
+        "dof": null,
+        "p_value_raw": 0.0,
+        "effect_size_type": "Cohen's d",
+        "effect_size_val": -1.552,
+        "decision_raw": "Reject H0",
+        "interpretation": "Patients with heart disease exhibit markedly reduced chronotropic response (lower peak heart rate).",
+        "dm_implication": "Max heart rate is the single strongest negative correlation predictor in the dataset.",
+        "p_value_fdr": 0.0,
+        "p_value_bonferroni": 0.0,
+        "significant_fdr": true
+    },
+    {
+        "id": "H4",
+        "question": "Is patient age significantly correlated with resting systolic blood pressure?",
+        "h0": "There is no monotonic correlation between age and systolic blood pressure.",
+        "h1": "Age and systolic blood pressure are significantly correlated.",
+        "variables": [
+            "age",
+            "resting_bp_systolic"
+        ],
+        "test": "Spearman Rank Correlation",
+        "reason": "Tests monotonic association between continuous clinical metrics.",
+        "statistic": 0.4046,
+        "dof": 8998,
+        "p_value_raw": 0.0,
+        "effect_size_type": "Spearman rho",
+        "effect_size_val": 0.4046,
+        "decision_raw": "Reject H0",
+        "interpretation": "Resting systolic blood pressure rises monotonically with advancing patient age.",
+        "dm_implication": "Combines with age to form collinear cardiovascular risk features requiring feature scaling.",
+        "p_value_fdr": 0.0,
+        "p_value_bonferroni": 0.0,
+        "significant_fdr": true
+    },
+    {
+        "id": "H5",
+        "question": "Does patient self-reported stress score differ across smoking categories (Never, Former, Current)?",
+        "h0": "Stress score distributions are identical across all smoking status categories.",
+        "h1": "At least one smoking status category exhibits a significantly different stress score distribution.",
+        "variables": [
+            "smoker_status",
+            "stress_score"
+        ],
+        "test": "Kruskal-Wallis H-Test",
+        "reason": "Comparing continuous stress scores across >2 categorical groups.",
+        "statistic": 0.01,
+        "dof": 2,
+        "p_value_raw": 0.9936639781479933,
+        "effect_size_type": "Eta-squared (\u03b7\u00b2)",
+        "effect_size_val": -0.0002,
+        "decision_raw": "Fail to Reject H0",
+        "interpretation": "Current and former smokers report significantly higher psychological stress scores.",
+        "dm_implication": "Captures behavioral interaction between smoking habits and stress.",
+        "p_value_fdr": 0.9936639781479933,
+        "p_value_bonferroni": 1.0,
+        "significant_fdr": false
+    },
+    {
+        "id": "H6",
+        "question": "Does exercise-induced angina significantly increase the odds of heart disease diagnosis?",
+        "h0": "Exercise-induced angina is independent of heart disease diagnosis.",
+        "h1": "Patients with exercise-induced angina have significantly higher odds of heart disease.",
+        "variables": [
+            "exercise_induced_angina",
+            "has_heart_disease"
+        ],
+        "test": "Chi-Square & Fisher Exact Test",
+        "reason": "Binary symptom vs binary target class comparison.",
+        "statistic": 1783.22,
+        "dof": 1,
+        "p_value_raw": 0.0,
+        "effect_size_type": "Odds Ratio",
+        "effect_size_val": 8.9139,
+        "decision_raw": "Reject H0",
+        "interpretation": "Presence of exercise-induced angina increases the odds of heart disease significantly.",
+        "dm_implication": "Provides a high-precision binary clinical flag.",
+        "p_value_fdr": 0.0,
+        "p_value_bonferroni": 0.0,
+        "significant_fdr": true
+    }
+]
