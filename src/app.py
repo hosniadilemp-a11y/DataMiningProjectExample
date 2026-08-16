@@ -7,7 +7,7 @@ Interactive Data Mining Academic Dashboard containing 9 dedicated pages:
 4. Statistical Analysis Suite (FDR Corrected & Effect Sizes)
 5. Multi-Perspective Feature Importance Comparison
 6. Model Benchmark & Hyperparameters Transparency
-7. Categorized & Importance-Color-Coded Heart Disease Risk Predictor (Top Output & Interactive Sliders)
+7. Categorized Risk Predictor (7-Tier Stratification Scale & Interactive Sliders)
 8. Key Discoveries & Findings
 9. About & Student Contribution Matrix
 """
@@ -139,6 +139,13 @@ st.markdown("""
         margin-right: 0.5rem;
         margin-bottom: 0.5rem;
     }
+    .risk-banner {
+        padding: 1.2rem;
+        border-radius: 0.6rem;
+        color: white;
+        font-weight: bold;
+        margin-bottom: 1rem;
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -186,7 +193,6 @@ def load_ml_artifacts():
         model = joblib.load(best_model_path) if best_model_path.exists() else None
         pipeline = joblib.load(pipeline_path) if pipeline_path.exists() else None
     except Exception:
-        # Re-fit in memory if pickle version mismatch occurs on Streamlit Cloud (e.g. Python 3.14)
         from src.preprocessing import prepare_data
         from sklearn.svm import SVC
         X_train, X_test, y_train, y_test, pipeline, feature_names = prepare_data(save_artifacts=True)
@@ -197,6 +203,24 @@ def load_ml_artifacts():
     comparison_df = pd.read_csv(comp_path) if comp_path.exists() else None
     
     return model, pipeline, metadata, comparison_df
+
+def get_risk_tier(prob: float):
+    """Classify probability into 7 granular clinical risk tiers."""
+    p_pct = prob * 100.0
+    if p_pct < 15.0:
+        return "🟩 ALL OK / NO RISK", "#059669", "Optimal Cardiovascular Health", "Cardiovascular biomarkers are in optimal ranges. Maintain healthy diet and exercise."
+    elif p_pct < 30.0:
+        return "🟢 LOW RISK", "#10B981", "Low Risk Profile", "Biomarkers align with healthy controls. Continue routine preventive health habits."
+    elif p_pct < 45.0:
+        return "🟡 MEDIUM RISK", "#D97706", "Medium / Moderate Risk", "Mild elevation in risk predictors detected. Lifestyle optimization and routine checkup advised."
+    elif p_pct < 55.0:
+        return "🟧 BORDERLINE RISK", "#F97316", "Borderline Risk Zone", "Patient is on the clinical threshold boundary. Further diagnostic screening recommended."
+    elif p_pct < 70.0:
+        return "🟠 HIGH RISK", "#EA580C", "High Cardiovascular Risk", "Substantial risk elevation detected across key cardiac biomarkers."
+    elif p_pct < 85.0:
+        return "🔴 VERY HIGH RISK", "#DC2626", "Very High Cardiovascular Risk", "Multiple compounding critical risk factors present. Medical consultation advised."
+    else:
+        return "🚨 DANGER / CRITICAL RISK", "#991B1B", "CRITICAL DANGER ZONE", "Immediate clinical medical evaluation and comprehensive diagnostic testing strongly recommended."
 
 df = load_raw()
 best_model, preprocessor_pipeline, model_metadata, comparison_df = load_ml_artifacts()
@@ -543,7 +567,7 @@ elif page == "6. Model Benchmark & Hyperparameters":
                 st.image(str(fig_cm), width="stretch")
 
 # ==========================================
-# PAGE 7 — CATEGORIZED DYNAMIC RISK PREDICTOR WITH SLIDERS
+# PAGE 7 — CATEGORIZED DYNAMIC RISK PREDICTOR WITH 7-TIER SCALE
 # ==========================================
 elif page == "7. Heart Disease Risk Predictor":
     st.title("🫀 Dynamic Patient Heart Disease Risk Predictor")
@@ -567,8 +591,8 @@ elif page == "7. Heart Disease Risk Predictor":
         # -------------------------------------------------------------
         # INTERACTIVE SLIDER CONTROLS (REAL-TIME INSTANT DYNAMIC UPDATE)
         # -------------------------------------------------------------
-        st.subheader("🎛️ Interactive Patient Clinical Parameter Sliders")
-        st.markdown("Drag any slider to observe real-time risk probability changes at the top of the page. Features are categorized by importance gradient (🔴 **Critical** $\\rightarrow$ 🟧 **High** $\\rightarrow$ 🟨 **Moderate** $\\rightarrow$ 🟩 **Lifestyle**):")
+        st.subheader("🎛️ Input Patient Clinical Information & Parameters")
+        st.markdown("Drag any slider to observe real-time risk probability and tier classification updates at the top of the page. Features are categorized by importance gradient (🔴 **Critical** $\\rightarrow$ 🟧 **High** $\\rightarrow$ 🟨 **Moderate** $\\rightarrow$ 🟩 **Lifestyle**):")
         
         # Category 1: High Impact Cardiac Risk Markers
         st.markdown("#### 🔴 Category 1: Primary Cardiac Risk Markers <span class='badge-critical'>CRITICAL IMPACT</span>", unsafe_allow_html=True)
@@ -661,20 +685,29 @@ elif page == "7. Heart Disease Risk Predictor":
         else:
             pred_prob = 1.0 if pred_class == 1 else 0.0
             
+        tier_label, color_code, subtitle, health_advice = get_risk_tier(pred_prob)
+        
         with top_prediction_card:
-            st.subheader("🎯 Real-Time Clinical Risk Prediction & Gauge Output")
-            res_col1, res_col2, res_col3 = st.columns(3)
+            st.subheader("🎯 Real-Time Clinical Risk Stratification Output")
             
+            # Customized Risk Banner
+            st.markdown(
+                f'<div class="risk-banner" style="background-color:{color_code};">'
+                f'<span style="font-size:1.5rem;">{tier_label}</span><br>'
+                f'<span style="font-size:1.1rem;opacity:0.95;">Estimated Probability: {pred_prob:.1%}</span>'
+                f'</div>',
+                unsafe_allow_html=True
+            )
+            
+            # Progress meter
+            st.progress(pred_prob)
+            
+            res_col1, res_col2, res_col3 = st.columns(3)
             with res_col1:
-                if pred_class == 1:
-                    st.error(f"### ⚠️ HIGH RISK PREDICTED\nEstimated Risk Probability: **{pred_prob:.1%}**")
-                else:
-                    st.success(f"### ✅ LOW RISK PREDICTED\nEstimated Risk Probability: **{pred_prob:.1%}**")
-                    
+                st.info(f"**Clinical Status:** {subtitle}\n\n**Guidance:** {health_advice}")
             with res_col2:
                 st.metric("Model Engine", model_metadata.get("best_model_name", "Support Vector Machine"))
                 st.metric("Model Test ROC-AUC", f"{model_metadata.get('test_metrics', {}).get('ROC-AUC', 0.9422):.4f}")
-                
             with res_col3:
                 st.metric("Model Test Accuracy", f"{model_metadata.get('test_metrics', {}).get('Accuracy', 0.8917):.2%}")
                 st.metric("Model Test Recall", f"{model_metadata.get('test_metrics', {}).get('Recall', 0.7670):.2%}")
