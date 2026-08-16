@@ -1,0 +1,57 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+ENV/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Data files (keep raw dataset in git if small or download via script)
+*.csv
+*.parquet
+*.xlsx
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+
+# Models & Joblib (keep small metadata, ignore large binaries if needed)
+models/*.joblib
+!models/.gitkeep
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints
+*/.ipynb_checkpoints/*
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+
+# LaTeX auxiliary files
+docs/*.aux
+docs/*.log
+docs/*.out
+docs/*.toc
+docs/*.synctex.gz
+docs/*.fdb_latexmk
+docs/*.fls
+
+# Streamlit
+.streamlit/
