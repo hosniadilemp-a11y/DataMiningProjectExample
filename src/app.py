@@ -12,14 +12,31 @@ Interactive Data Mining Academic Dashboard containing 9 dedicated pages:
 9. About & Student Contribution Matrix
 """
 
+import sys
+from pathlib import Path
+
+# Ensure root directory and src directory are in sys.path BEFORE any joblib/pickle loading
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
+if str(PROJECT_ROOT / "src") not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT / "src"))
+
 import streamlit as st
 import pandas as pd
 import numpy as np
 import joblib
 import matplotlib.pyplot as plt
 import seaborn as sns
-from pathlib import Path
 import json
+
+# Pre-import project modules so unpickler can locate custom symbols
+try:
+    import src.preprocessing
+    import src.models
+    import src.statistical_tests
+except Exception:
+    pass
 
 # Setup page configuration
 st.set_page_config(
@@ -126,7 +143,6 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # Helper Paths
-PROJECT_ROOT = Path(__file__).resolve().parent.parent
 DATA_RAW_PATH = PROJECT_ROOT / "data" / "raw" / "heart_disease_risk_2026.csv"
 DATA_PROCESSED_DIR = PROJECT_ROOT / "data" / "processed"
 MODELS_DIR = PROJECT_ROOT / "models"
@@ -157,6 +173,7 @@ def load_ml_artifacts():
     meta_path = MODELS_DIR / "model_metadata.json"
     comp_path = DATA_PROCESSED_DIR / "model_comparison.csv"
     
+    # Check if files exist or need initial run
     if not best_model_path.exists() or not pipeline_path.exists():
         try:
             from scripts.train_pipeline import run_pipeline
@@ -164,8 +181,18 @@ def load_ml_artifacts():
         except Exception:
             pass
             
-    model = joblib.load(best_model_path) if best_model_path.exists() else None
-    pipeline = joblib.load(pipeline_path) if pipeline_path.exists() else None
+    # Fail-safe loading with automatic in-memory retraining if Python version mismatch
+    try:
+        model = joblib.load(best_model_path) if best_model_path.exists() else None
+        pipeline = joblib.load(pipeline_path) if pipeline_path.exists() else None
+    except Exception:
+        # Re-fit in memory if pickle version mismatch occurs on Streamlit Cloud (e.g. Python 3.14)
+        from src.preprocessing import prepare_data
+        from sklearn.svm import SVC
+        X_train, X_test, y_train, y_test, pipeline, feature_names = prepare_data(save_artifacts=True)
+        model = SVC(C=1.0, kernel="rbf", gamma="scale", probability=True, random_state=42)
+        model.fit(X_train, y_train)
+        
     metadata = load_json_artifact(meta_path) if meta_path.exists() else {}
     comparison_df = pd.read_csv(comp_path) if comp_path.exists() else None
     
