@@ -9,7 +9,7 @@ Usage:
 """
 
 import pandas as pd
-from src.statistics import run_hypothesis_suite
+from src.statistical_tests import run_hypothesis_suite
 from src.feature_analysis import compute_multi_perspective_importance
 from src.findings import generate_key_findings
 from src.visualization import (

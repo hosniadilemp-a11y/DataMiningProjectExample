@@ -43,7 +43,6 @@ def compute_rank_biserial(group0: np.ndarray, group1: np.ndarray) -> float:
     """Calculate Glass Rank-Biserial Correlation for Mann-Whitney U test."""
     n1, n2 = len(group0), len(group1)
     u_stat, _ = stats.mannwhitneyu(group0, group1, alternative="two-sided")
-    # r = 1 - (2U / (n1 * n2))
     return float(1.0 - (2.0 * u_stat) / (n1 * n2))
 
 def run_hypothesis_suite(df: pd.DataFrame = None) -> List[dict]:
@@ -56,9 +55,7 @@ def run_hypothesis_suite(df: pd.DataFrame = None) -> List[dict]:
     alpha = 0.05
     results = []
     
-    # ----------------------------------------------------
     # H1: Chest Pain Type vs Heart Disease Status (Chi-Square)
-    # ----------------------------------------------------
     ct1 = pd.crosstab(df["chest_pain_type"], df["has_heart_disease"])
     chi2_1, p1, dof1, _ = stats.chi2_contingency(ct1)
     cramer_v1 = compute_cramers_v(ct1)
@@ -80,9 +77,7 @@ def run_hypothesis_suite(df: pd.DataFrame = None) -> List[dict]:
         "dm_implication": "Chest pain type is a crucial categorical predictor for classification modeling."
     })
     
-    # ----------------------------------------------------
     # H2: ST Depression Difference (Mann-Whitney U)
-    # ----------------------------------------------------
     g0_st = df[df["has_heart_disease"] == 0]["st_depression"].values
     g1_st = df[df["has_heart_disease"] == 1]["st_depression"].values
     u2, p2 = stats.mannwhitneyu(g0_st, g1_st, alternative="two-sided")
@@ -105,9 +100,7 @@ def run_hypothesis_suite(df: pd.DataFrame = None) -> List[dict]:
         "dm_implication": "ST depression provides strong non-linear signal for tree-based and margin-based classifiers."
     })
 
-    # ----------------------------------------------------
     # H3: Max Heart Rate Achieved Difference (Mann-Whitney U / Cohen's d)
-    # ----------------------------------------------------
     g0_hr = df[df["has_heart_disease"] == 0]["max_heart_rate_achieved"].values
     g1_hr = df[df["has_heart_disease"] == 1]["max_heart_rate_achieved"].values
     u3, p3 = stats.mannwhitneyu(g0_hr, g1_hr, alternative="two-sided")
@@ -130,9 +123,7 @@ def run_hypothesis_suite(df: pd.DataFrame = None) -> List[dict]:
         "dm_implication": "Max heart rate is the single strongest negative correlation predictor in the dataset."
     })
 
-    # ----------------------------------------------------
     # H4: Age vs Systolic Blood Pressure Correlation (Spearman)
-    # ----------------------------------------------------
     rho4, p4 = stats.spearmanr(df["age"], df["resting_bp_systolic"])
     results.append({
         "id": "H4",
@@ -152,12 +143,9 @@ def run_hypothesis_suite(df: pd.DataFrame = None) -> List[dict]:
         "dm_implication": "Combines with age to form collinear cardiovascular risk features requiring feature scaling."
     })
 
-    # ----------------------------------------------------
     # H5: Smoker Status vs Stress Score (Kruskal-Wallis)
-    # ----------------------------------------------------
     sm_groups = [group["stress_score"].values for _, group in df.groupby("smoker_status")]
     kw5, p5 = stats.kruskal(*sm_groups)
-    # Eta-squared = (H - k + 1) / (N - k)
     k5 = len(sm_groups)
     n5 = len(df)
     eta2_5 = float((kw5 - k5 + 1) / (n5 - k5))
@@ -179,9 +167,7 @@ def run_hypothesis_suite(df: pd.DataFrame = None) -> List[dict]:
         "dm_implication": "Captures behavioral interaction between smoking habits and stress."
     })
 
-    # ----------------------------------------------------
     # H6: Exercise Induced Angina vs Heart Disease (Chi-Square / Odds Ratio)
-    # ----------------------------------------------------
     ct6 = pd.crosstab(df["exercise_induced_angina"], df["has_heart_disease"])
     chi2_6, p6, dof6, _ = stats.chi2_contingency(ct6)
     oddsratio6, _ = stats.fisher_exact(ct6)

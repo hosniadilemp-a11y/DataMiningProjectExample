@@ -4,7 +4,7 @@ Unit tests for Statistical Hypothesis Testing Module.
 
 import pytest
 import pandas as pd
-from src.statistics import run_hypothesis_suite, compute_cramers_v, compute_cohens_d
+from src.statistical_tests import run_hypothesis_suite, compute_cramers_v, compute_cohens_d
 
 def test_cramers_v():
     """Verify Cramér's V calculation."""

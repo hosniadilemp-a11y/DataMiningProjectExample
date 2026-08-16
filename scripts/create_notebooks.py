@@ -58,7 +58,7 @@ def create_nb2():
         make_cell("markdown", "# 02 — Statistical Analysis & Hypothesis Testing Suite\n**Heart Disease Risk Prediction Reference Project**\n*Simulated Contributor: AISD05*"),
         make_cell("code", [
             "import pandas as pd",
-            "from src.statistics import run_hypothesis_suite"
+            "from src.statistical_tests import run_hypothesis_suite"
         ]),
         make_cell("markdown", "## 1. Run 6 Hypothesis Tests (FDR Corrected)"),
         make_cell("code", [
