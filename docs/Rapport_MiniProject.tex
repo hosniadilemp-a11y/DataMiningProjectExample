@@ -1,0 +1,230 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[margin=1in]{geometry}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\usepackage{amsmath,amssymb}
+\usepackage{xcolor}
+\usepackage{float}
+\usepackage{caption}
+\usepackage{subcaption}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    filecolor=magenta,      
+    urlcolor=blue,
+    citecolor=blue,
+    pdftitle={Heart Disease Risk Prediction Scientific Report},
+    pdfpagemode=UseOutlines
+}
+
+\title{\textbf{\Large Data Mining and Machine Learning for Heart Disease Risk Prediction}\\
+\large A Reference Project Specification \& Experimental Benchmark}
+
+\author{
+\textbf{Simulated Contributors:}\\
+Student Code AISD05 \quad Student Code SIAD19 \quad Student Code RSD20\\[0.5em]
+\small Demonstration GitHub Repository Reference Project\\
+\small Academic Institution -- Course on Data Mining \& Machine Learning
+}
+\date{Academic Year 2025--2026}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+Cardiovascular diseases (CVDs) remain the leading cause of global mortality. Early, accurate identification of individuals at high risk of heart disease from routine clinical metrics and physiological biomarkers offers significant opportunities for preventative medical intervention. This scientific report documents a complete Data Mining mini-project demonstrating the end-to-end Machine Learning lifecycle on the official Kaggle dataset \texttt{uditjain13/heart-disease-risk-2026}. We perform rigorous data quality validation ($N = 9,000$ patient records, $25$ clinical features), non-leaking data preprocessing via scikit-learn \texttt{ColumnTransformer} pipelines, exploratory data analysis, and non-parametric statistical hypothesis testing. We benchmark six supervised classification algorithms: Zero-R Baseline, K-Nearest Neighbors (KNN), Decision Tree, Random Forest, Naive Bayes, and Support Vector Machine (SVM), using 5-fold Stratified Cross-Validation and hyperparameter grid search. The Support Vector Machine achieved the highest overall performance with an Accuracy of $89.17\%$, Weighted F1-score of $0.8898$, and ROC-AUC of $0.9422$, followed closely by Random Forest ($88.22\%$ accuracy, $0.9361$ ROC-AUC). Finally, we present an interactive multi-page Streamlit web dashboard and document a simulated 3-student team Git workflow model.
+\end{abstract}
+
+\tableofcontents
+\newpage
+
+\section{Mandatory Demonstration Warning}
+\begin{figure}[H]
+\centering
+\colorbox{yellow!20}{
+\parbox{0.95\textwidth}{
+\textbf{[DEMONSTRATION / SAMPLE PROJECT WARNING]}\\[0.5em]
+This scientific report and associated repository represent an educational reference project created to demonstrate the expected structure, methodology, documentation, Git workflow, and presentation of a Data Mining mini-project.\\[0.5em]
+For this demonstration, a \textbf{SINGLE GitHub account} is used to publish the repository. The student codes \texttt{AISD05}, \texttt{SIAD19}, and \texttt{RSD20} represent \textbf{SIMULATED CONTRIBUTORS} used to demonstrate how a multi-student project is organized through commit labels, branches, Pull Requests, and merges.\\[0.5em]
+In a real student project, \textbf{every student must use their own individual GitHub account} and make genuine individual contributions.
+}
+}
+\end{figure}
+
+\section{Introduction \& Background}
+Cardiovascular diseases account for an estimated 17.9 million deaths annually. Machine learning and Data Mining techniques provide decision-support utilities capable of extracting subtle high-dimensional non-linear interactions among clinical biomarkers, demographic factors, and daily lifestyle parameters.
+
+\section{Problem Statement}
+The core scientific question driving this study is formulated as follows:
+\begin{quote}
+\textit{Can routine patient demographic, physiological, blood chemistry, and lifestyle characteristics accurately predict whether an individual is at high risk of developing heart disease?}
+\end{quote}
+
+\section{Objectives}
+The primary objectives of this reference project are:
+\begin{enumerate}
+    \item Acquire and audit the official Kaggle dataset \texttt{uditjain13/heart-disease-risk-2026} via \texttt{kagglehub}.
+    \item Implement a robust, leakage-free preprocessing and feature engineering pipeline.
+    \item Conduct Exploratory Data Analysis (EDA) and formal statistical hypothesis testing ($\alpha = 0.05$).
+    \item Implement, optimize, and benchmark six classification algorithms.
+    \item Deploy an interactive Streamlit application for clinical risk inference.
+\end{enumerate}
+
+\section{Dataset Audit \& Validation}
+The dataset was downloaded dynamically using the \texttt{kagglehub} Python library. The raw dataset contains exactly $9,000$ patient records and $27$ attributes ($1$ identifier \texttt{patient\_id}, $25$ predictor features, and $1$ binary target \texttt{has\_heart\_disease}). 
+Data quality inspection confirmed $0$ missing values and $0$ duplicate records across all observations. The target class exhibits moderate imbalance: $6,273$ negative cases ($69.7\%$) vs $2,727$ positive heart disease cases ($30.3\%$).
+
+\section{Data Acquisition Methodology}
+Data acquisition is automated via Python script using the standard KaggleHub API:
+\begin{verbatim}
+import kagglehub
+path = kagglehub.dataset_download("uditjain13/heart-disease-risk-2026")
+\end{verbatim}
+
+\section{Data Preprocessing \& Feature Engineering}
+To prevent data leakage during scaling and encoding, all transformations are encapsulated inside a scikit-learn \texttt{ColumnTransformer}:
+\begin{itemize}
+    \item \textbf{Continuous Features ($19$ features + $3$ engineered):} Scaled using \texttt{StandardScaler} ($z = \frac{x - \mu}{\sigma}$).
+    \item \textbf{Engineered Features:}
+    \begin{align}
+        \text{Cholesterol/HDL Ratio} &= \frac{\text{cholesterol\_total}}{\max(\text{hdl}, 1.0)} \\
+        \text{Pulse Pressure} &= \text{resting\_bp\_systolic} - \text{resting\_bp\_diastolic} \\
+        \text{MAP} &= \text{resting\_bp\_diastolic} + \frac{\text{Pulse Pressure}}{3}
+    \end{align}
+    \item \textbf{Categorical Features ($3$ features):} Encoded using One-Hot Encoding (\texttt{drop='first'}).
+    \item \textbf{Boolean Features ($3$ features):} Converted to numeric binary indicators ($0.0 / 1.0$).
+\end{itemize}
+
+\section{Exploratory Data Analysis (EDA)}
+Figure~\ref{fig:target_dist} shows the target distribution. Clinical biomarker analysis indicates that ST depression, age, LDL cholesterol, and systolic blood pressure exhibit positive correlations with heart disease risk, whereas maximum heart rate achieved and HDL cholesterol exhibit strong negative correlations.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\textwidth]{figures/target_distribution.png}
+\caption{Target Variable Class Audit ($N = 9,000$).}
+\label{fig:target_dist}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\textwidth]{figures/correlation_matrix.png}
+\caption{Pearson Correlation Heatmap of Top Clinical Features.}
+\label{fig:corr_matrix}
+\end{figure}
+
+\section{Statistical Analysis \& Hypothesis Testing}
+Non-parametric Mann-Whitney U tests were conducted for continuous biomarkers ($\alpha = 0.05$):
+\begin{itemize}
+    \item $H_0$: The distribution of ST depression is equal across healthy and heart disease patients.
+    \item $H_1$: Patients with heart disease exhibit significantly higher ST depression.
+\end{itemize}
+Result: $p < 0.0001$, rejecting $H_0$. Similarly, Chi-Square tests of independence for \texttt{exercise\_induced\_angina} and \texttt{chest\_pain\_type} yielded $p < 0.0001$.
+
+\section{Data Mining Methodology}
+We adopt the Supervised Classification track. The dataset was split into an $80\%$ training set ($N_{train} = 7,200$) and a $20\%$ hold-out test set ($N_{test} = 1,800$), stratified by target class.
+
+\section{Classification Algorithms}
+We benchmarked six standard algorithms:
+\begin{enumerate}
+    \item \textbf{Zero-R Baseline:} Predicts majority class ($0$).
+    \item \textbf{K-Nearest Neighbors (KNN):} Distance-weighted majority vote.
+    \item \textbf{Decision Tree:} Gini / Entropy split tree optimization.
+    \item \textbf{Random Forest:} Ensemble of decision trees with feature sub-sampling.
+    \item \textbf{Naive Bayes:} Gaussian Naive Bayes under independence assumption.
+    \item \textbf{Support Vector Machine (SVC):} Radial Basis Function (RBF) kernel margin maximization.
+\end{enumerate}
+
+\section{Hyperparameter Optimization \& Cross-Validation}
+Hyperparameter optimization was performed via 5-fold Stratified \texttt{GridSearchCV} on the training data, optimizing for weighted F1-score.
+
+\section{Experimental Results}
+Table~\ref{tab:benchmark} summarizes the empirical test set performance across all six classifiers.
+
+\begin{table}[H]
+\centering
+\caption{Supervised Classification Model Benchmark Results (Test Set, $N = 1,800$)}
+\label{tab:benchmark}
+\small
+\begin{tabular}{lcccccc}
+\toprule
+\textbf{Model} & \textbf{Accuracy} & \textbf{Precision} & \textbf{Recall} & \textbf{F1 (W)} & \textbf{ROC-AUC} & \textbf{CV Score (F1)} \\
+\midrule
+Zero-R Baseline & 0.6972 & 0.0000 & 0.0000 & 0.5728 & 0.5000 & $0.5725 \pm 0.0004$ \\
+K-Nearest Neighbors & 0.8317 & 0.8201 & 0.5688 & 0.8217 & 0.8678 & $0.8069 \pm 0.0037$ \\
+Decision Tree & 0.8644 & 0.8265 & 0.6991 & 0.8610 & 0.9097 & $0.8561 \pm 0.0085$ \\
+Naive Bayes & 0.8611 & 0.7496 & 0.8128 & 0.8626 & 0.9271 & $0.8513 \pm 0.0120$ \\
+Random Forest & 0.8822 & 0.8612 & 0.7284 & 0.8792 & 0.9361 & $0.8757 \pm 0.0051$ \\
+\textbf{Support Vector Machine} & \textbf{0.8917} & \textbf{0.8601} & \textbf{0.7670} & \textbf{0.8898} & \textbf{0.9422} & $\mathbf{0.8954 \pm 0.0047}$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.75\textwidth]{figures/roc_curves.png}
+\caption{Receiver Operating Characteristic (ROC) Curves for all 6 Models.}
+\label{fig:roc_curves}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\textwidth]{figures/confusion_matrices.png}
+\caption{Confusion Matrix Grid across 6 Classification Models.}
+\label{fig:cm_grid}
+\end{figure}
+
+\section{Feature Importance Analysis}
+Figure~\ref{fig:feature_imp} shows the top predictive features identified by Random Forest Gini Importance. Maximum heart rate achieved, ST depression, age, LDL cholesterol, and HbA1c emerged as the top five risk drivers.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\textwidth]{figures/feature_importance.png}
+\caption{Top 15 Predictive Clinical Features (Random Forest Importance).}
+\label{fig:feature_imp}
+\end{figure}
+
+\section{Streamlit Web Application}
+An interactive multi-page web application was built in \texttt{src/app.py} featuring:
+\begin{itemize}
+    \item Overview \& Problem Statement
+    \item Dataset Explorer \& Missing Value Audit
+    \item Interactive EDA Dashboard
+    \item Statistical Hypothesis Testing Summary
+    \item Model Benchmark Comparison
+    \item Dynamic Patient Risk Predictor Interface with Medical Disclaimer
+    \item About \& Student Team Matrix
+\end{itemize}
+
+\section{Limitations \& Medical Disclaimer}
+\begin{quote}
+\textbf{Medical Disclaimer:} This application and paper are strictly for academic Data Mining demonstration purposes and do not constitute a medical diagnosis.
+\end{quote}
+
+\section{Student Contribution Matrix}
+\begin{table}[H]
+\centering
+\caption{Simulated Student Responsibility Distribution}
+\begin{tabular}{lll}
+\toprule
+\textbf{Student Code} & \textbf{Primary Responsibilities} & \textbf{Git Feature Branch} \\
+\midrule
+AISD05 & Dataset acquisition, quality audit, EDA, statistical testing & \texttt{feature/AISD05-eda} \\
+SIAD19 & Preprocessing pipeline, ML modeling, tuning, evaluation & \texttt{feature/SIAD19-modeling} \\
+RSD20 & Streamlit web application, predictor UI, LaTeX report & \texttt{feature/RSD20-streamlit} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Conclusion}
+This reference mini-project successfully demonstrates an end-to-end Data Mining workflow for heart disease risk classification. Support Vector Machine achieved the leading diagnostic performance with an ROC-AUC of $0.9422$ and weighted F1-score of $0.8898$.
+
+\begin{thebibliography}{99}
+\bibitem{kaggle2026} Udit Jain, \textit{Heart Disease Risk Dataset 2026}, Kaggle, 2026.
+\bibitem{scikit-learn} Pedregosa et al., \textit{Scikit-learn: Machine Learning in Python}, JMLR, 12:2825-2830, 2011.
+\end{thebibliography}
+
+\end{document}
