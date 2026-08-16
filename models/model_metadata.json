@@ -1,0 +1,31 @@
+{
+    "best_model_name": "Support Vector Machine",
+    "best_model_params": {
+        "C": 1.0,
+        "gamma": "scale",
+        "kernel": "rbf"
+    },
+    "test_metrics": {
+        "Accuracy": 0.8917,
+        "Precision": 0.8601,
+        "Recall": 0.767,
+        "F1 (Binary)": 0.8109,
+        "F1 (Macro)": 0.8675,
+        "F1 (Weighted)": 0.8898,
+        "ROC-AUC": 0.9422,
+        "CV F1 Mean": 0.8954,
+        "CV F1 Std": 0.0047,
+        "Confusion Matrix": [
+            [
+                1187,
+                68
+            ],
+            [
+                127,
+                418
+            ]
+        ]
+    },
+    "dataset_records": 9000,
+    "dataset_features": 31
+}
