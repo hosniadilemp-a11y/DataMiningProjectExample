@@ -45,9 +45,21 @@ docs/*.aux
 docs/*.log
 docs/*.out
 docs/*.toc
+docs/*.lof
+docs/*.lot
+docs/*.bbl
+docs/*.blg
 docs/*.synctex.gz
 docs/*.fdb_latexmk
 docs/*.fls
+*.aux
+*.log
+*.out
+*.toc
+*.lof
+*.lot
+*.bbl
+*.blg
 
 # Streamlit
 .streamlit/
