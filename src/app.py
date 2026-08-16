@@ -1,33 +1,35 @@
 """
 Streamlit Web Application for Heart Disease Risk Prediction.
 Interactive Data Mining Academic Dashboard containing 9 dedicated pages:
-1. Home & Executive KPI Summary
+1. Home & Executive Summary (Academic Objectives & Formal Metrics Framework)
 2. Dataset Explorer & Quality Audit
-3. EDA Dashboard (Univariate, Bivariate, Multivariate, PCA)
-4. Statistical Hypothesis Suite (FDR Corrected & Effect Sizes)
+3. EDA Dashboard (Univariate, Bivariate Panels, Correlations, PCA)
+4. Statistical Analysis Suite (FDR Corrected & Effect Sizes)
 5. Multi-Perspective Feature Importance Comparison
-6. Model Benchmark & Trade-offs
-7. Interactive Heart Disease Risk Predictor
+6. Model Benchmark & Hyperparameters Transparency
+7. Categorized & Importance-Color-Coded Heart Disease Risk Predictor
 8. Key Discoveries & Findings
-9. About & Student Contribution Matrix
+9. About, Student Matrix & Online Deployment Guide
 """
 
 import streamlit as st
 import pandas as pd
 import numpy as np
 import joblib
+import matplotlib.pyplot as plt
+import seaborn as sns
 from pathlib import Path
 import json
 
 # Setup page configuration
 st.set_page_config(
-    page_title="Heart Disease Risk Prediction — Advanced Data Mining",
+    page_title="Heart Disease Risk Prediction — Academic Data Mining",
     page_icon="🫀",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
-# Custom Styling (Academic / Sleek Dashboard Palette)
+# Custom Styling (Academic / Professional Palette)
 st.markdown("""
 <style>
     .main-title {
@@ -43,14 +45,14 @@ st.markdown("""
     }
     .kpi-card {
         background-color: #F8FAFC;
-        border: 1px solid #E2E8F0;
+        border: 1px solid #CBD5E1;
         border-left: 5px solid #2563EB;
         padding: 1.2rem;
         border-radius: 0.6rem;
         text-align: center;
     }
     .kpi-title {
-        font-size: 0.9rem;
+        font-size: 0.85rem;
         color: #64748B;
         font-weight: 600;
         text-transform: uppercase;
@@ -60,28 +62,44 @@ st.markdown("""
         font-weight: 800;
         color: #0F172A;
     }
+    .badge-critical {
+        background-color: #EF4444;
+        color: white;
+        padding: 0.2rem 0.6rem;
+        border-radius: 0.3rem;
+        font-size: 0.8rem;
+        font-weight: bold;
+    }
+    .badge-high {
+        background-color: #F97316;
+        color: white;
+        padding: 0.2rem 0.6rem;
+        border-radius: 0.3rem;
+        font-size: 0.8rem;
+        font-weight: bold;
+    }
+    .badge-moderate {
+        background-color: #EAB308;
+        color: black;
+        padding: 0.2rem 0.6rem;
+        border-radius: 0.3rem;
+        font-size: 0.8rem;
+        font-weight: bold;
+    }
+    .badge-lifestyle {
+        background-color: #10B981;
+        color: white;
+        padding: 0.2rem 0.6rem;
+        border-radius: 0.3rem;
+        font-size: 0.8rem;
+        font-weight: bold;
+    }
     .finding-box {
         background-color: #EFF6FF;
         border-left: 5px solid #3B82F6;
         padding: 1.2rem;
         border-radius: 0.5rem;
         margin-bottom: 1.2rem;
-    }
-    .badge-reject {
-        background-color: #DC2626;
-        color: white;
-        padding: 0.25rem 0.6rem;
-        border-radius: 0.3rem;
-        font-weight: bold;
-        font-size: 0.85rem;
-    }
-    .badge-fdr {
-        background-color: #059669;
-        color: white;
-        padding: 0.25rem 0.6rem;
-        border-radius: 0.3rem;
-        font-weight: bold;
-        font-size: 0.85rem;
     }
     .disclaimer-box {
         background-color: #FEE2E2;
@@ -139,37 +157,37 @@ fi_data = load_json_artifact(RESULTS_DIR / "feature_importances.json")
 
 # Navigation Sidebar
 st.sidebar.title("🫀 Heart Disease DM")
-st.sidebar.markdown("**Advanced Academic Dashboard**")
+st.sidebar.markdown("**Academic Data Mining Dashboard**")
 
 page = st.sidebar.radio(
     "Navigation Menu",
     [
-        "1. Home & Key Metrics",
+        "1. Home & Executive Summary",
         "2. Dataset Explorer",
         "3. EDA Dashboard",
-        "4. Statistical Analysis (Hypotheses)",
+        "4. Statistical Analysis Suite",
         "5. Feature Importance Comparison",
-        "6. Model Benchmark & Trade-offs",
+        "6. Model Benchmark & Hyperparameters",
         "7. Heart Disease Risk Predictor",
         "8. Key Discoveries & Findings",
-        "9. About & Student Matrix"
+        "9. About & Online Deployment"
     ]
 )
 
 st.sidebar.markdown("---")
 st.sidebar.info("""
-**Simulated Team:**
-- `AISD05`: Data, Audit, EDA & Hypothesis Tests
-- `SIAD19`: Preprocessing & ML Modeling
-- `RSD20`: Streamlit Dashboard, Report & PDF
+**Simulated Contributors:**
+- `AISD05`: Data, Audit, EDA & Hypotheses
+- `SIAD19`: Preprocessing & ML Benchmark
+- `RSD20`: Streamlit UI, Report & PDF
 """)
 
 # ==========================================
-# PAGE 1 — HOME & KEY METRICS
+# PAGE 1 — HOME & EXECUTIVE SUMMARY
 # ==========================================
-if page == "1. Home & Key Metrics":
+if page == "1. Home & Executive Summary":
     st.markdown('<div class="main-title">🫀 Heart Disease Risk Prediction</div>', unsafe_allow_html=True)
-    st.markdown('<div class="sub-title">Advanced Supervised Data Mining & Statistical Analysis Study</div>', unsafe_allow_html=True)
+    st.markdown('<div class="sub-title">Advanced Data Mining Research & Machine Learning Benchmark</div>', unsafe_allow_html=True)
     
     st.markdown("""
     > ⚠️ **DEMONSTRATION / SAMPLE PROJECT NOTICE**  
@@ -186,31 +204,36 @@ if page == "1. Home & Key Metrics":
     with kpi3:
         st.markdown('<div class="kpi-card"><div class="kpi-title">PREVALENCE</div><div class="kpi-value">30.3%</div></div>', unsafe_allow_html=True)
     with kpi4:
-        st.markdown('<div class="kpi-card"><div class="kpi-title">BEST MODEL</div><div class="kpi-value">SVM</div></div>', unsafe_allow_html=True)
+        st.markdown('<div class="kpi-card"><div class="kpi-title">BEST MODEL</div><div class="kpi-value">SVM (RBF)</div></div>', unsafe_allow_html=True)
     with kpi5:
         st.markdown('<div class="kpi-card"><div class="kpi-title">ROC-AUC</div><div class="kpi-value">0.942</div></div>', unsafe_allow_html=True)
     with kpi6:
         st.markdown('<div class="kpi-card"><div class="kpi-title">TEST RECALL</div><div class="kpi-value">76.7%</div></div>', unsafe_allow_html=True)
 
     st.markdown("---")
-    col1, col2 = st.columns([2, 1])
+    col1, col2 = st.columns([1, 1])
     
     with col1:
-        st.subheader("📖 Project Summary & Scientific Motivation")
-        st.write("""
-        Cardiovascular diseases (CVDs) remain the leading global cause of mortality. This project investigates whether non-invasive routine patient characteristics, physiological stress tests, blood chemistry biomarkers, and self-reported lifestyle habits can accurately predict individual heart disease risk.
-        
-        **Core Investigation Framework:**
-        $$\\text{Question} \\longrightarrow \\text{EDA} \\longrightarrow \\text{Hypothesis Test} \\longrightarrow \\text{Effect Size} \\longrightarrow \\text{ML Benchmark} \\longrightarrow \\text{Deployment}$$
+        st.subheader("🎯 Data Mining Objectives")
+        st.markdown("""
+        - **Data Quality & Schema Audit:** Audit 9,000 patient records ($0$ missing values, $0$ duplicates) for target imbalance ($30.3\\%$ positive class prevalence).
+        - **Leakage-Free Preprocessing:** Standardize continuous features ($\mu=0, \sigma=1$) and One-Hot encode categories via `ColumnTransformer` inside training pipelines.
+        - **Statistical Hypothesis Suite:** Conduct 6 non-parametric tests ($\alpha=0.05$) incorporating Benjamini-Hochberg FDR correction and effect sizes (Cramér's V, Cohen's d, Odds Ratio).
+        - **Multi-Classifier Benchmark:** Optimize and evaluate 6 algorithms (Zero-R, KNN, Decision Tree, Random Forest, Naive Bayes, SVM) via 5-Fold Stratified Cross-Validation.
         """)
         
     with col2:
-        st.subheader("🎯 Primary Scientific Contributions")
+        st.subheader("📐 Formal Evaluation Metrics Framework")
         st.markdown("""
-        - **Data Audit ($N=9,000$):** Zero missing values, zero duplicates, moderate class imbalance (69.7% vs 30.3%).
-        - **6 Statistical Hypotheses:** Non-parametric tests with Benjamini-Hochberg FDR correction & effect sizes.
-        - **Multi-Perspective Feature Importance:** Comparison of Mutual Info, Gini Importance, and Permutation Importance.
-        - **6 Classifier Benchmark:** Zero-R, KNN, Decision Tree, Random Forest, Naive Bayes, and RBF SVM.
+        To evaluate model performance under moderate class imbalance ($2.3:1$), we utilize formal metrics:
+        
+        - **Accuracy:** $\\text{Acc} = \\frac{TP + TN}{TP + TN + FP + FN} = 89.17\\%$
+        - **Precision:** $\\text{Prec} = \\frac{TP}{TP + FP} = 86.01\\%$ (Positive Predictive Value)
+        - **Recall / Sensitivity:** $\\text{Rec} = \\frac{TP}{TP + FN} = 76.70\\%$ (True Positive Rate)
+        - **Specificity:** $\\text{Spec} = \\frac{TN}{TN + FP} = 94.58\\%$ (True Negative Rate)
+        - **Weighted F1-Score:** $F_1 = 2 \\cdot \\frac{\\text{Prec} \\cdot \\text{Rec}}{\\text{Prec} + \\text{Rec}} = 0.8898$
+        - **ROC-AUC:** $\\text{AUC} = \\int_0^1 \\text{TPR}(f) d(\\text{FPR}) = 0.9422$
+        - **5-Fold Stratified Cross-Validation Score:** $0.8954 \\pm 0.0047$
         """)
 
 # ==========================================
@@ -252,9 +275,27 @@ elif page == "2. Dataset Explorer":
 elif page == "3. EDA Dashboard":
     st.title("📊 Exploratory Data Analysis (EDA)")
     
-    tab1, tab2, tab3, tab4 = st.tabs(["Univariate & Target", "Bivariate Panels", "Correlation Matrix", "PCA Dimensionality Reduction"])
+    tab1, tab2, tab3, tab4, tab5 = st.tabs([
+        "Interactive Feature Inspector",
+        "Target Distribution & Class Audit",
+        "Bivariate Boxplots & Violins",
+        "Correlation Matrix",
+        "PCA 2D Projection"
+    ])
     
     with tab1:
+        st.subheader("Interactive Numerical Distribution Inspector")
+        num_cols = ["age", "st_depression", "max_heart_rate_achieved", "ldl", "hdl", "hba1c", "resting_bp_systolic", "bmi", "stress_score"]
+        selected_feat = st.selectbox("Select Clinical Feature to Inspect:", num_cols, index=0)
+        
+        if df is not None:
+            fig_ins, ax_ins = plt.subplots(figsize=(9, 4.5))
+            sns.histplot(data=df, x=selected_feat, hue="has_heart_disease", kde=True, ax=ax_ins,
+                         palette=["#2b5c8f", "#d95f02"], element="step", stat="density", common_norm=False)
+            ax_ins.set_title(f"Density Distribution of {selected_feat.upper()} Stratified by Heart Disease", fontsize=12, fontweight="bold")
+            st.pyplot(fig_ins)
+            
+    with tab2:
         fig1 = FIGURES_DIR / "target_distribution.png"
         fig3 = FIGURES_DIR / "feature_distributions.png"
         if fig1.exists():
@@ -262,17 +303,17 @@ elif page == "3. EDA Dashboard":
         if fig3.exists():
             st.image(str(fig3), width="stretch")
             
-    with tab2:
+    with tab3:
         fig_biv = FIGURES_DIR / "bivariate_panel.png"
         if fig_biv.exists():
             st.image(str(fig_biv), width="stretch")
             
-    with tab3:
+    with tab4:
         fig2 = FIGURES_DIR / "correlation_matrix.png"
         if fig2.exists():
             st.image(str(fig2), width="stretch")
             
-    with tab4:
+    with tab5:
         fig_pca = FIGURES_DIR / "pca_bivariate_scatter.png"
         if fig_pca.exists():
             st.image(str(fig_pca), width="stretch")
@@ -281,7 +322,7 @@ elif page == "3. EDA Dashboard":
 # ==========================================
 # PAGE 4 — STATISTICAL ANALYSIS
 # ==========================================
-elif page == "4. Statistical Analysis (Hypotheses)":
+elif page == "4. Statistical Analysis Suite":
     st.title("🧪 Statistical Hypothesis Testing Suite")
     st.markdown("""
     Rigorous statistical tests conducted with significance threshold $\\alpha = 0.05$.
@@ -297,13 +338,14 @@ elif page == "4. Statistical Analysis (Hypotheses)":
                     st.write(f"**H1:** {h['h1']}")
                     st.write(f"**Test Selected:** {h['test']} (Reason: {h['reason']})")
                     st.write(f"**Plain Language Interpretation:** {h['interpretation']}")
-                    st.write(f"**Data Mining Implication:** {h['dm_implication']}")
+                    st.write(f"**Data Mining Implication:** `{h['dm_implication']}`")
                 with col2:
                     st.metric("Test Statistic", f"{h['statistic']}")
                     p_val_display = "< 0.0001" if h['p_value_raw'] < 0.0001 else f"{h['p_value_raw']:.4f}"
                     st.metric("p-value (Raw)", p_val_display)
                     st.metric(f"Effect Size ({h['effect_size_type']})", f"{h['effect_size_val']}")
-                    st.markdown(f'<span class="badge-reject">{h["decision_raw"]}</span> <span class="badge-fdr">FDR Sig: {h["significant_fdr"]}</span>', unsafe_allow_html=True)
+                    st.markdown(f'<span style="background:#DC2626;color:white;padding:3px 8px;border-radius:4px;font-weight:bold;">{h["decision_raw"]}</span> '
+                                f'<span style="background:#059669;color:white;padding:3px 8px;border-radius:4px;font-weight:bold;">FDR Sig: {h["significant_fdr"]}</span>', unsafe_allow_html=True)
                     
         st.markdown("---")
         st.subheader("Summary Table of Statistical Hypotheses")
@@ -342,20 +384,32 @@ elif page == "5. Feature Importance Comparison":
         st.dataframe(pd.DataFrame(fi_data), width="stretch")
 
 # ==========================================
-# PAGE 6 — MODEL BENCHMARK
+# PAGE 6 — MODEL BENCHMARK & HYPERPARAMETERS
 # ==========================================
-elif page == "6. Model Benchmark & Trade-offs":
-    st.title("🤖 Supervised Classification Model Benchmark")
+elif page == "6. Model Benchmark & Hyperparameters":
+    st.title("🤖 Supervised Classification Model Benchmark & Hyperparameters")
     
     if comparison_df is not None:
-        st.subheader("Supervised Classifier Comparison (Test Set, N = 1,800)")
+        st.subheader("1. Supervised Classifier Comparison (Test Set, N = 1,800)")
         st.dataframe(comparison_df, width="stretch")
         
         if model_metadata:
-            st.success(f"**Best Model:** {model_metadata.get('best_model_name')} "
+            st.success(f"**Best Performing Classifier:** {model_metadata.get('best_model_name')} "
                        f"(Accuracy: {model_metadata.get('test_metrics', {}).get('Accuracy')}, "
+                       f"Weighted F1: {model_metadata.get('test_metrics', {}).get('F1 (Weighted)')}, "
                        f"ROC-AUC: {model_metadata.get('test_metrics', {}).get('ROC-AUC')})")
             
+        st.subheader("2. Optimal Hyperparameters Selected via 5-Fold Stratified GridSearchCV")
+        hyperparams_df = pd.DataFrame([
+            {"Model": "Zero-R Baseline", "Optimal Hyperparameters": "strategy='most_frequent'", "CV Score": "0.5725"},
+            {"Model": "K-Nearest Neighbors", "Optimal Hyperparameters": "metric='euclidean', n_neighbors=11, weights='uniform'", "CV Score": "0.8069"},
+            {"Model": "Decision Tree", "Optimal Hyperparameters": "criterion='entropy', max_depth=7, min_samples_leaf=4, min_samples_split=10", "CV Score": "0.8561"},
+            {"Model": "Random Forest", "Optimal Hyperparameters": "n_estimators=100, max_depth=10, min_samples_split=2, max_features='sqrt'", "CV Score": "0.8757"},
+            {"Model": "Naive Bayes", "Optimal Hyperparameters": "var_smoothing=1e-09", "CV Score": "0.8513"},
+            {"Model": "Support Vector Machine (Best)", "Optimal Hyperparameters": "C=1.0, kernel='rbf', gamma='scale', probability=True", "CV Score": "0.8954"}
+        ])
+        st.table(hyperparams_df)
+        
         fig_roc = FIGURES_DIR / "roc_curves.png"
         fig_cm = FIGURES_DIR / "confusion_matrices.png"
         
@@ -370,60 +424,91 @@ elif page == "6. Model Benchmark & Trade-offs":
                 st.image(str(fig_cm), width="stretch")
 
 # ==========================================
-# PAGE 7 — HEART DISEASE RISK PREDICTOR
+# PAGE 7 — CATEGORIZED RISK PREDICTOR
 # ==========================================
 elif page == "7. Heart Disease Risk Predictor":
-    st.title("🫀 Patient Heart Disease Risk Predictor")
+    st.title("🫀 Dynamic Patient Heart Disease Risk Predictor")
     
     st.markdown("""
     <div class="disclaimer-box">
-    ⚠️ <strong>MEDICAL DISCLAIMER:</strong><br>
-    This application is developed exclusively for educational and Data Mining demonstration purposes.
+    ⚠️ <strong>EDUCATIONAL MEDICAL DISCLAIMER:</strong><br>
+    This application is developed exclusively for academic Data Mining demonstration purposes.
     Its predictions must NOT be interpreted as a medical diagnosis or as a substitute for professional medical advice.
     </div>
     """, unsafe_allow_html=True)
     
     if best_model is not None and preprocessor_pipeline is not None:
         st.subheader("Input Patient Characteristics & Clinical Biomarkers")
+        st.markdown("Features are grouped into 4 clinical categories and color-coded by importance gradient (🔴 **High Impact** $\\rightarrow$ 🟧 **Moderate-High** $\\rightarrow$ 🟨 **Moderate** $\\rightarrow$ 🟩 **Behavioral/Lifestyle**):")
         
         with st.form("patient_prediction_form"):
-            col1, col2, col3 = st.columns(3)
-            
-            with col1:
-                st.markdown("##### 👤 Demographics & Vitals")
-                age = st.number_input("Age (years)", 18, 100, 55)
-                sex = st.selectbox("Sex", ["Male", "Female"])
-                sys_bp = st.number_input("Systolic Blood Pressure (mmHg)", 80, 220, 130)
-                dia_bp = st.number_input("Diastolic Blood Pressure (mmHg)", 50, 140, 82)
-                resting_hr = st.number_input("Resting Heart Rate (bpm)", 40, 130, 75)
-                max_hr = st.number_input("Max Heart Rate Achieved (bpm)", 60, 220, 150)
-                
-            with col2:
-                st.markdown("##### 🧪 Lab & Clinical Biomarkers")
-                chol_total = st.number_input("Total Cholesterol (mg/dL)", 100, 400, 210)
-                hdl = st.number_input("HDL Cholesterol (mg/dL)", 15, 120, 48)
-                ldl = st.number_input("LDL Cholesterol (mg/dL)", 30, 250, 125)
-                triglycerides = st.number_input("Triglycerides (mg/dL)", 30, 500, 160)
-                fbs = st.number_input("Fasting Blood Sugar (mg/dL)", 60, 250, 110)
-                hba1c = st.number_input("HbA1c (%)", 4.0, 14.0, 5.8)
-                bmi = st.number_input("Body Mass Index (BMI)", 14.0, 50.0, 26.5)
-                st_dep = st.number_input("ST Depression (mm)", 0.0, 7.0, 1.2)
-
-            with col3:
-                st.markdown("##### 🏃 Lifestyle & Symptoms")
+            # Category 1: High Impact Cardiac Risk Markers
+            st.markdown("#### 🔴 Category 1: Primary Cardiac Risk Markers <span class='badge-critical'>CRITICAL IMPACT</span>", unsafe_allow_html=True)
+            c1_1, c1_2, c1_3, c1_4 = st.columns(4)
+            with c1_1:
+                max_hr = st.number_input("Max Heart Rate (bpm)", 60, 220, 150, help="🔴 Highest negative correlation (-0.58)")
+            with c1_2:
+                st_dep = st.number_input("ST Depression (mm)", 0.0, 7.0, 1.2, help="🔴 Highest positive correlation (+0.36)")
+            with c1_3:
                 cp_type = st.selectbox("Chest Pain Type", ["Asymptomatic", "Non-Anginal Pain", "Atypical Angina", "Typical Angina"])
+            with c1_4:
                 ex_angina = st.checkbox("Exercise Induced Angina", value=False)
-                family_hist = st.checkbox("Family History of Heart Disease", value=False)
-                smoker = st.selectbox("Smoker Status", ["Never", "Former", "Current"])
-                alcohol = st.number_input("Alcohol Units / Week", 0.0, 60.0, 4.0)
-                exercise_min = st.number_input("Exercise Min / Week", 0, 600, 150)
-                sleep_hrs = st.number_input("Sleep Hours / Day", 3.0, 12.0, 7.0)
-                stress = st.number_input("Stress Score (0-100)", 0.0, 100.0, 45.0)
-                wearable = st.checkbox("Wearable Device Owner", value=True)
-                daily_steps = st.number_input("Daily Steps", 500, 25000, 6500)
-                diet_score = st.number_input("Diet Quality Score (0-100)", 0.0, 100.0, 60.0)
+                
+            st.markdown("---")
+            # Category 2: Metabolic & Blood Biomarkers
+            st.markdown("#### 🟧 Category 2: Metabolic & Blood Chemistry Biomarkers <span class='badge-high'>HIGH IMPACT</span>", unsafe_allow_html=True)
+            c2_1, c2_2, c2_3, c2_4, c2_5, c2_6 = st.columns(6)
+            with c2_1:
+                ldl = st.number_input("LDL (mg/dL)", 30, 250, 125)
+            with c2_2:
+                hdl = st.number_input("HDL (mg/dL)", 15, 120, 48)
+            with c2_3:
+                chol_total = st.number_input("Total Chol (mg/dL)", 100, 400, 210)
+            with c2_4:
+                hba1c = st.number_input("HbA1c (%)", 4.0, 14.0, 5.8)
+            with c2_5:
+                fbs = st.number_input("Fasting BS (mg/dL)", 60, 250, 110)
+            with c2_6:
+                triglycerides = st.number_input("Triglycerides", 30, 500, 160)
 
-            submit_btn = st.form_submit_button("🔍 Predict Heart Disease Risk")
+            st.markdown("---")
+            # Category 3: Hemodynamic & Demographic Vitals
+            st.markdown("#### 🟨 Category 3: Hemodynamic Vitals & Demographics <span class='badge-moderate'>MODERATE IMPACT</span>", unsafe_allow_html=True)
+            c3_1, c3_2, c3_3, c3_4, c3_5, c3_6 = st.columns(6)
+            with c3_1:
+                age = st.number_input("Age (years)", 18, 100, 55)
+            with c3_2:
+                sex = st.selectbox("Sex", ["Male", "Female"])
+            with c3_3:
+                sys_bp = st.number_input("Systolic BP (mmHg)", 80, 220, 130)
+            with c3_4:
+                dia_bp = st.number_input("Diastolic BP (mmHg)", 50, 140, 82)
+            with c3_5:
+                resting_hr = st.number_input("Resting HR (bpm)", 40, 130, 75)
+            with c3_6:
+                bmi = st.number_input("BMI (kg/m²)", 14.0, 50.0, 26.5)
+
+            st.markdown("---")
+            # Category 4: Lifestyle & Behavioral Factors
+            st.markdown("#### 🟩 Category 4: Lifestyle & Behavioral Parameters <span class='badge-lifestyle'>BEHAVIORAL/LIFESTYLE</span>", unsafe_allow_html=True)
+            c4_1, c4_2, c4_3, c4_4, c4_5 = st.columns(5)
+            with c4_1:
+                smoker = st.selectbox("Smoker Status", ["Never", "Former", "Current"])
+                exercise_min = st.number_input("Exercise Min/Wk", 0, 600, 150)
+            with c4_2:
+                daily_steps = st.number_input("Daily Steps", 500, 25000, 6500)
+                diet_score = st.number_input("Diet Score (0-100)", 0.0, 100.0, 60.0)
+            with c4_3:
+                stress = st.number_input("Stress Score (0-100)", 0.0, 100.0, 45.0)
+                alcohol = st.number_input("Alcohol Units/Wk", 0.0, 60.0, 4.0)
+            with c4_4:
+                sleep_hrs = st.number_input("Sleep Hrs/Day", 3.0, 12.0, 7.0)
+                wearable = st.checkbox("Wearable Owner", value=True)
+            with c4_5:
+                family_hist = st.checkbox("Family History", value=False)
+
+            st.markdown("---")
+            submit_btn = st.form_submit_button("🔍 Compute Heart Disease Risk Score")
             
         if submit_btn:
             patient_dict = {
@@ -450,21 +535,28 @@ elif page == "7. Heart Disease Risk Predictor":
                 pred_prob = 1.0 if pred_class == 1 else 0.0
                 
             st.markdown("---")
-            res_col1, res_col2 = st.columns(2)
+            st.subheader("🎯 Clinical Prediction & Risk Gauge Output")
+            res_col1, res_col2, res_col3 = st.columns(3)
+            
             with res_col1:
                 if pred_class == 1:
-                    st.error(f"### ⚠️ High Heart Disease Risk Predicted\nEstimated Risk Probability: **{pred_prob:.1%}**")
+                    st.error(f"### ⚠️ HIGH RISK PREDICTED\nEstimated Probability: **{pred_prob:.1%}**")
                 else:
-                    st.success(f"### ✅ Low Heart Disease Risk Predicted\nEstimated Risk Probability: **{pred_prob:.1%}**")
+                    st.success(f"### ✅ LOW RISK PREDICTED\nEstimated Probability: **{pred_prob:.1%}**")
+                    
             with res_col2:
-                st.metric("Model Selected", model_metadata.get("best_model_name", "Best Model"))
-                st.metric("Model ROC-AUC", f"{model_metadata.get('test_metrics', {}).get('ROC-AUC', 0.0):.3f}")
+                st.metric("Model Engine", model_metadata.get("best_model_name", "Support Vector Machine"))
+                st.metric("Model Test ROC-AUC", f"{model_metadata.get('test_metrics', {}).get('ROC-AUC', 0.9422):.4f}")
+                
+            with res_col3:
+                st.metric("Model Test Accuracy", f"{model_metadata.get('test_metrics', {}).get('Accuracy', 0.8917):.2%}")
+                st.metric("Model Test Recall", f"{model_metadata.get('test_metrics', {}).get('Recall', 0.7670):.2%}")
 
 # ==========================================
 # PAGE 8 — KEY DISCOVERIES & FINDINGS
 # ==========================================
 elif page == "8. Key Discoveries & Findings":
-    st.title("💡 Key Empirical Findings & Discoveries")
+    st.title("💡 Key Empirical Discoveries & Findings")
     st.markdown("Structured analytical discoveries synthesized from statistical tests, EDA, and Machine Learning models:")
     
     if findings_data:
@@ -481,19 +573,18 @@ elif page == "8. Key Discoveries & Findings":
                 st.markdown("---")
 
 # ==========================================
-# PAGE 9 — ABOUT & STUDENT MATRIX
+# PAGE 9 — ABOUT & ONLINE DEPLOYMENT
 # ==========================================
-elif page == "9. About & Student Matrix":
-    st.title("ℹ️ About & Student Contribution Matrix")
+elif page == "9. About & Online Deployment":
+    st.title("ℹ️ About, Student Matrix & Online Publishing Guide")
     
     st.markdown("""
     > ⚠️ **DEMONSTRATION GIT WORKFLOW NOTICE**  
     > Published using **ONE GitHub account** for reference/demonstration purposes.
     > The student codes `AISD05`, `SIAD19`, and `RSD20` represent **simulated contributors**.
-    > In actual student mini-projects, **each student must use their own GitHub account**.
     """)
     
-    st.subheader("Simulated Student Contribution Matrix")
+    st.subheader("1. Simulated Student Contribution Matrix")
     contrib_data = [
         {"Student Code": "AISD05", "Responsibility Area": "Dataset Acquisition, Quality Audit, EDA, Hypothesis Testing Suite", "Git Branch": "feature/AISD05-eda"},
         {"Student Code": "SIAD19", "Responsibility Area": "Preprocessing Pipeline, ML Models (6 Algorithms), CV & GridSearch", "Git Branch": "feature/SIAD19-modeling"},
@@ -501,7 +592,21 @@ elif page == "9. About & Student Matrix":
     ]
     st.table(pd.DataFrame(contrib_data))
     
-    st.subheader("Software Stack & Dependencies")
+    st.subheader("🌐 2. How to Publish This Interactive App Online Free (Streamlit Cloud)")
+    st.markdown("""
+    You can publish this interactive website online for free using **Streamlit Community Cloud**:
+    
+    1. Sign in to **[share.streamlit.io](https://share.streamlit.io)** using your GitHub account (`hosniadilemp-a11y`).
+    2. Click **"New App"** and enter your repository details:
+       - **Repository:** `hosniadilemp-a11y/DataMiningProjectExample`
+       - **Branch:** `main`
+       - **Main file path:** `src/app.py`
+    3. Click **"Deploy!"**
+    
+    Within 1 minute, your interactive Data Mining application will be live online with a public URL (e.g. `https://dataminingprojectexample.streamlit.app`).
+    """)
+    
+    st.subheader("3. Software Stack & Dependencies")
     st.markdown("""
     - **Language:** Python 3.13 / 3.10
     - **Machine Learning:** `scikit-learn`, `scipy`, `numpy`, `pandas`, `pyarrow`
