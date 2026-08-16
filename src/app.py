@@ -7,7 +7,7 @@ Interactive Data Mining Academic Dashboard containing 9 dedicated pages:
 4. Statistical Analysis Suite (FDR Corrected & Effect Sizes)
 5. Multi-Perspective Feature Importance Comparison
 6. Model Benchmark & Hyperparameters Transparency
-7. Categorized & Importance-Color-Coded Heart Disease Risk Predictor (Dynamic Top Output)
+7. Categorized & Importance-Color-Coded Heart Disease Risk Predictor (Top Real-Time Output)
 8. Key Discoveries & Findings
 9. About & Student Contribution Matrix
 """
@@ -511,7 +511,7 @@ elif page == "6. Model Benchmark & Hyperparameters":
 # PAGE 7 — CATEGORIZED DYNAMIC RISK PREDICTOR
 # ==========================================
 elif page == "7. Heart Disease Risk Predictor":
-    st.title("🫀 Patient Heart Disease Risk Predictor")
+    st.title("🫀 Dynamic Patient Heart Disease Risk Predictor")
     
     st.markdown("""
     <div class="disclaimer-box">
@@ -524,7 +524,13 @@ elif page == "7. Heart Disease Risk Predictor":
     if best_model is not None and preprocessor_pipeline is not None:
         
         # -------------------------------------------------------------
-        # STEP 1: INTERACTIVE INPUT CONTROLS (REAL-TIME UPDATING)
+        # RESERVED TOP CONTAINER FOR REAL-TIME DYNAMIC OUTPUT
+        # -------------------------------------------------------------
+        top_prediction_card = st.container()
+        st.markdown("---")
+        
+        # -------------------------------------------------------------
+        # INPUT CONTROLS (REAL-TIME INSTANT UPDATE AS SLIDERS CHANGE)
         # -------------------------------------------------------------
         st.subheader("⚙️ Input Patient Characteristics & Clinical Biomarkers")
         st.markdown("Features are categorized into 4 clinical groups with color-gradient badges (🔴 **Critical** $\\rightarrow$ 🟧 **High** $\\rightarrow$ 🟨 **Moderate** $\\rightarrow$ 🟩 **Behavioral/Lifestyle**):")
@@ -533,69 +539,69 @@ elif page == "7. Heart Disease Risk Predictor":
         st.markdown("#### 🔴 Category 1: Primary Cardiac Risk Markers <span class='badge-critical'>CRITICAL IMPACT</span>", unsafe_allow_html=True)
         c1_1, c1_2, c1_3, c1_4 = st.columns(4)
         with c1_1:
-            max_hr = st.number_input("Max Heart Rate (bpm)", 60, 220, 150, help="🔴 Highest negative correlation (-0.58)")
+            max_hr = st.number_input("Max Heart Rate (bpm)", 60, 220, 150, key="p7_max_hr", help="🔴 Highest negative correlation (-0.58)")
         with c1_2:
-            st_dep = st.number_input("ST Depression (mm)", 0.0, 7.0, 1.2, help="🔴 Highest positive correlation (+0.36)")
+            st_dep = st.number_input("ST Depression (mm)", 0.0, 7.0, 1.2, key="p7_st_dep", help="🔴 Highest positive correlation (+0.36)")
         with c1_3:
-            cp_type = st.selectbox("Chest Pain Type", ["Asymptomatic", "Non-Anginal Pain", "Atypical Angina", "Typical Angina"])
+            cp_type = st.selectbox("Chest Pain Type", ["Asymptomatic", "Non-Anginal Pain", "Atypical Angina", "Typical Angina"], key="p7_cp_type")
         with c1_4:
-            ex_angina = st.checkbox("Exercise Induced Angina", value=False)
+            ex_angina = st.checkbox("Exercise Induced Angina", value=False, key="p7_ex_angina")
             
         st.markdown("---")
         # Category 2: Metabolic & Blood Biomarkers
         st.markdown("#### 🟧 Category 2: Metabolic & Blood Chemistry Biomarkers <span class='badge-high'>HIGH IMPACT</span>", unsafe_allow_html=True)
         c2_1, c2_2, c2_3, c2_4, c2_5, c2_6 = st.columns(6)
         with c2_1:
-            ldl = st.number_input("LDL (mg/dL)", 30, 250, 125)
+            ldl = st.number_input("LDL (mg/dL)", 30, 250, 125, key="p7_ldl")
         with c2_2:
-            hdl = st.number_input("HDL (mg/dL)", 15, 120, 48)
+            hdl = st.number_input("HDL (mg/dL)", 15, 120, 48, key="p7_hdl")
         with c2_3:
-            chol_total = st.number_input("Total Chol (mg/dL)", 100, 400, 210)
+            chol_total = st.number_input("Total Chol (mg/dL)", 100, 400, 210, key="p7_chol_total")
         with c2_4:
-            hba1c = st.number_input("HbA1c (%)", 4.0, 14.0, 5.8)
+            hba1c = st.number_input("HbA1c (%)", 4.0, 14.0, 5.8, key="p7_hba1c")
         with c2_5:
-            fbs = st.number_input("Fasting BS (mg/dL)", 60, 250, 110)
+            fbs = st.number_input("Fasting BS (mg/dL)", 60, 250, 110, key="p7_fbs")
         with c2_6:
-            triglycerides = st.number_input("Triglycerides", 30, 500, 160)
+            triglycerides = st.number_input("Triglycerides", 30, 500, 160, key="p7_triglycerides")
 
         st.markdown("---")
         # Category 3: Hemodynamic & Demographic Vitals
         st.markdown("#### 🟨 Category 3: Hemodynamic Vitals & Demographics <span class='badge-moderate'>MODERATE IMPACT</span>", unsafe_allow_html=True)
         c3_1, c3_2, c3_3, c3_4, c3_5, c3_6 = st.columns(6)
         with c3_1:
-            age = st.number_input("Age (years)", 18, 100, 55)
+            age = st.number_input("Age (years)", 18, 100, 55, key="p7_age")
         with c3_2:
-            sex = st.selectbox("Sex", ["Male", "Female"])
+            sex = st.selectbox("Sex", ["Male", "Female"], key="p7_sex")
         with c3_3:
-            sys_bp = st.number_input("Systolic BP (mmHg)", 80, 220, 130)
+            sys_bp = st.number_input("Systolic BP (mmHg)", 80, 220, 130, key="p7_sys_bp")
         with c3_4:
-            dia_bp = st.number_input("Diastolic BP (mmHg)", 50, 140, 82)
+            dia_bp = st.number_input("Diastolic BP (mmHg)", 50, 140, 82, key="p7_dia_bp")
         with c3_5:
-            resting_hr = st.number_input("Resting HR (bpm)", 40, 130, 75)
+            resting_hr = st.number_input("Resting HR (bpm)", 40, 130, 75, key="p7_resting_hr")
         with c3_6:
-            bmi = st.number_input("BMI (kg/m²)", 14.0, 50.0, 26.5)
+            bmi = st.number_input("BMI (kg/m²)", 14.0, 50.0, 26.5, key="p7_bmi")
 
         st.markdown("---")
         # Category 4: Lifestyle & Behavioral Factors
         st.markdown("#### 🟩 Category 4: Lifestyle & Behavioral Parameters <span class='badge-lifestyle'>BEHAVIORAL/LIFESTYLE</span>", unsafe_allow_html=True)
         c4_1, c4_2, c4_3, c4_4, c4_5 = st.columns(5)
         with c4_1:
-            smoker = st.selectbox("Smoker Status", ["Never", "Former", "Current"])
-            exercise_min = st.number_input("Exercise Min/Wk", 0, 600, 150)
+            smoker = st.selectbox("Smoker Status", ["Never", "Former", "Current"], key="p7_smoker")
+            exercise_min = st.number_input("Exercise Min/Wk", 0, 600, 150, key="p7_exercise_min")
         with c4_2:
-            daily_steps = st.number_input("Daily Steps", 500, 25000, 6500)
-            diet_score = st.number_input("Diet Score (0-100)", 0.0, 100.0, 60.0)
+            daily_steps = st.number_input("Daily Steps", 500, 25000, 6500, key="p7_daily_steps")
+            diet_score = st.number_input("Diet Score (0-100)", 0.0, 100.0, 60.0, key="p7_diet_score")
         with c4_3:
-            stress = st.number_input("Stress Score (0-100)", 0.0, 100.0, 45.0)
-            alcohol = st.number_input("Alcohol Units/Wk", 0.0, 60.0, 4.0)
+            stress = st.number_input("Stress Score (0-100)", 0.0, 100.0, 45.0, key="p7_stress")
+            alcohol = st.number_input("Alcohol Units/Wk", 0.0, 60.0, 4.0, key="p7_alcohol")
         with c4_4:
-            sleep_hrs = st.number_input("Sleep Hrs/Day", 3.0, 12.0, 7.0)
-            wearable = st.checkbox("Wearable Owner", value=True)
+            sleep_hrs = st.number_input("Sleep Hrs/Day", 3.0, 12.0, 7.0, key="p7_sleep_hrs")
+            wearable = st.checkbox("Wearable Owner", value=True, key="p7_wearable")
         with c4_5:
-            family_hist = st.checkbox("Family History", value=False)
+            family_hist = st.checkbox("Family History", value=False, key="p7_family_hist")
 
         # -------------------------------------------------------------
-        # STEP 2: DYNAMIC REAL-TIME PREDICTION COMPUTATION
+        # COMPUTE DYNAMIC REAL-TIME PREDICTION & POPULATE TOP CONTAINER
         # -------------------------------------------------------------
         patient_dict = {
             "age": [age], "sex": [sex], "resting_bp_systolic": [sys_bp], "resting_bp_diastolic": [dia_bp],
@@ -620,26 +626,23 @@ elif page == "7. Heart Disease Risk Predictor":
         else:
             pred_prob = 1.0 if pred_class == 1 else 0.0
             
-        # -------------------------------------------------------------
-        # STEP 3: PROMINENT TOP PREDICTION OUTPUT PANEL
-        # -------------------------------------------------------------
-        st.markdown("---")
-        st.subheader("🎯 Real-Time Clinical Risk Prediction & Gauge Output")
-        res_col1, res_col2, res_col3 = st.columns(3)
-        
-        with res_col1:
-            if pred_class == 1:
-                st.error(f"### ⚠️ HIGH RISK PREDICTED\nEstimated Risk Probability: **{pred_prob:.1%}**")
-            else:
-                st.success(f"### ✅ LOW RISK PREDICTED\nEstimated Risk Probability: **{pred_prob:.1%}**")
-                
-        with res_col2:
-            st.metric("Model Engine", model_metadata.get("best_model_name", "Support Vector Machine"))
-            st.metric("Model Test ROC-AUC", f"{model_metadata.get('test_metrics', {}).get('ROC-AUC', 0.9422):.4f}")
+        with top_prediction_card:
+            st.subheader("🎯 Real-Time Clinical Risk Prediction & Gauge Output")
+            res_col1, res_col2, res_col3 = st.columns(3)
             
-        with res_col3:
-            st.metric("Model Test Accuracy", f"{model_metadata.get('test_metrics', {}).get('Accuracy', 0.8917):.2%}")
-            st.metric("Model Test Recall", f"{model_metadata.get('test_metrics', {}).get('Recall', 0.7670):.2%}")
+            with res_col1:
+                if pred_class == 1:
+                    st.error(f"### ⚠️ HIGH RISK PREDICTED\nEstimated Risk Probability: **{pred_prob:.1%}**")
+                else:
+                    st.success(f"### ✅ LOW RISK PREDICTED\nEstimated Risk Probability: **{pred_prob:.1%}**")
+                    
+            with res_col2:
+                st.metric("Model Engine", model_metadata.get("best_model_name", "Support Vector Machine"))
+                st.metric("Model Test ROC-AUC", f"{model_metadata.get('test_metrics', {}).get('ROC-AUC', 0.9422):.4f}")
+                
+            with res_col3:
+                st.metric("Model Test Accuracy", f"{model_metadata.get('test_metrics', {}).get('Accuracy', 0.8917):.2%}")
+                st.metric("Model Test Recall", f"{model_metadata.get('test_metrics', {}).get('Recall', 0.7670):.2%}")
 
 # ==========================================
 # PAGE 8 — KEY DISCOVERIES & FINDINGS
