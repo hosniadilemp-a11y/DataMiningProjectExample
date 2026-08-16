@@ -1,0 +1,166 @@
+{
+    "Zero-R Baseline": {
+        "metrics": {
+            "Accuracy": 0.6972,
+            "Precision": 0.0,
+            "Recall": 0.0,
+            "F1 (Binary)": 0.0,
+            "F1 (Macro)": 0.4108,
+            "F1 (Weighted)": 0.5728,
+            "ROC-AUC": 0.5,
+            "CV F1 Mean": 0.5725,
+            "CV F1 Std": 0.0004,
+            "Confusion Matrix": [
+                [
+                    1255,
+                    0
+                ],
+                [
+                    545,
+                    0
+                ]
+            ]
+        },
+        "best_params": {}
+    },
+    "K-Nearest Neighbors": {
+        "metrics": {
+            "Accuracy": 0.8317,
+            "Precision": 0.8201,
+            "Recall": 0.5688,
+            "F1 (Binary)": 0.6717,
+            "F1 (Macro)": 0.7793,
+            "F1 (Weighted)": 0.8217,
+            "ROC-AUC": 0.8678,
+            "CV F1 Mean": 0.8069,
+            "CV F1 Std": 0.0037,
+            "Confusion Matrix": [
+                [
+                    1187,
+                    68
+                ],
+                [
+                    235,
+                    310
+                ]
+            ]
+        },
+        "best_params": {
+            "metric": "euclidean",
+            "n_neighbors": 5,
+            "weights": "uniform"
+        }
+    },
+    "Decision Tree": {
+        "metrics": {
+            "Accuracy": 0.8644,
+            "Precision": 0.8265,
+            "Recall": 0.6991,
+            "F1 (Binary)": 0.7575,
+            "F1 (Macro)": 0.8317,
+            "F1 (Weighted)": 0.861,
+            "ROC-AUC": 0.9097,
+            "CV F1 Mean": 0.8561,
+            "CV F1 Std": 0.0085,
+            "Confusion Matrix": [
+                [
+                    1175,
+                    80
+                ],
+                [
+                    164,
+                    381
+                ]
+            ]
+        },
+        "best_params": {
+            "criterion": "gini",
+            "max_depth": 5,
+            "min_samples_leaf": 4,
+            "min_samples_split": 5
+        }
+    },
+    "Random Forest": {
+        "metrics": {
+            "Accuracy": 0.8822,
+            "Precision": 0.8612,
+            "Recall": 0.7284,
+            "F1 (Binary)": 0.7893,
+            "F1 (Macro)": 0.8538,
+            "F1 (Weighted)": 0.8792,
+            "ROC-AUC": 0.9361,
+            "CV F1 Mean": 0.8757,
+            "CV F1 Std": 0.0051,
+            "Confusion Matrix": [
+                [
+                    1191,
+                    64
+                ],
+                [
+                    148,
+                    397
+                ]
+            ]
+        },
+        "best_params": {
+            "max_depth": 10,
+            "max_features": "sqrt",
+            "min_samples_split": 2,
+            "n_estimators": 100
+        }
+    },
+    "Naive Bayes": {
+        "metrics": {
+            "Accuracy": 0.8611,
+            "Precision": 0.7496,
+            "Recall": 0.8128,
+            "F1 (Binary)": 0.7799,
+            "F1 (Macro)": 0.8392,
+            "F1 (Weighted)": 0.8626,
+            "ROC-AUC": 0.9271,
+            "CV F1 Mean": 0.8513,
+            "CV F1 Std": 0.012,
+            "Confusion Matrix": [
+                [
+                    1107,
+                    148
+                ],
+                [
+                    102,
+                    443
+                ]
+            ]
+        },
+        "best_params": {
+            "var_smoothing": 1e-09
+        }
+    },
+    "Support Vector Machine": {
+        "metrics": {
+            "Accuracy": 0.8917,
+            "Precision": 0.8601,
+            "Recall": 0.767,
+            "F1 (Binary)": 0.8109,
+            "F1 (Macro)": 0.8675,
+            "F1 (Weighted)": 0.8898,
+            "ROC-AUC": 0.9422,
+            "CV F1 Mean": 0.8954,
+            "CV F1 Std": 0.0047,
+            "Confusion Matrix": [
+                [
+                    1187,
+                    68
+                ],
+                [
+                    127,
+                    418
+                ]
+            ]
+        },
+        "best_params": {
+            "C": 1.0,
+            "gamma": "scale",
+            "kernel": "rbf"
+        }
+    }
+}
