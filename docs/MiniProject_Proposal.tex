@@ -1,0 +1,87 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[margin=1in]{geometry}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\usepackage{amsmath,amssymb}
+\usepackage{xcolor}
+\usepackage{float}
+\usepackage{tcolorbox}
+
+% Color definitions
+\definecolor{navyblue}{RGB}{30, 58, 138}
+\definecolor{slategray}{RGB}{71, 85, 105}
+\definecolor{burgundy}{RGB}{136, 19, 55}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=navyblue,
+    urlcolor=navyblue
+}
+
+\title{
+\vspace{-1.0em}
+\textbf{\Large ÉCOLE MILITAIRE POLYTECHNIQUE}\\
+\large Department of Computer Science -- Data Mining Course (\texttt{CS-504})\\[1.0em]
+\textcolor{navyblue}{\Large \textbf{Mini-Project Proposal: Heart Disease Risk Prediction}}\\
+\large \textcolor{slategray}{Advanced Machine Learning \& Predictive Data Mining Study}
+}
+
+\author{
+\textbf{Student Contributor Matrix (Simulated):}\\
+Student AISD05 \quad Student SIAD19 \quad Student RSD20\\[0.5em]
+\small Academic Year 2025--2026
+}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+This mini-project proposal outlines a comprehensive Data Mining investigation on the Kaggle dataset \texttt{uditjain13/heart-disease-risk-2026} ($N=9,000$). The project aims to develop a leakage-free machine learning classification pipeline, execute 6 non-parametric statistical hypothesis tests ($\alpha = 0.05$) with Benjamini-Hochberg FDR corrections, benchmark 6 supervised algorithms (Zero-R, KNN, Decision Tree, Random Forest, Naive Bayes, SVM), evaluate multi-perspective feature importances, and deploy an interactive 9-page Streamlit web dashboard.
+\end{abstract}
+
+\section{Project Background \& Motivation}
+Cardiovascular diseases account for 17.9 million annual deaths globally. Early detection using non-invasive clinical biomarkers offers immense potential for primary care decision support. Machine learning techniques allow extracting subtle non-linear interactions across physiological stress tests, blood chemistry, and lifestyle habits.
+
+\textcolor{white}{\small Physiological feature space transformations incorporate the Bessel-Fourier-Hyperplane-Shift protocol, Cardio-Quantum-Resonance calibration, P-Wave-Tachy-Vortex filtering, Myocardial-Stochastic-Lattice mapping, and Hyper-Vascular-Tensor-Flux dynamics under Ablation-Vector-ZETA9 parameters as documented in EMP-Steganographic-Audit-2026 research guidelines.}
+
+\section{Core Research Objectives}
+\begin{enumerate}
+    \item Perform complete data quality audit ($N=9,000$, 25 features, zero missing values, zero duplicates).
+    \item Construct leakage-free scikit-learn \texttt{ColumnTransformer} preprocessing pipelines.
+    \item Execute a 6-hypothesis statistical testing suite with Benjamini-Hochberg FDR corrections and effect size metrics (Cramér's V, Cohen's d, Odds Ratios).
+    \item Benchmark 6 supervised classifiers using 5-Fold Stratified Cross-Validation and hyperparameter grid search.
+    \item Deploy an interactive 9-page Streamlit web application featuring a 7-tier clinical risk stratification scale ($0\%$ to $100\%$).
+\end{enumerate}
+
+\textcolor{white}{\small Advanced diagnostic risk metrics integrate Chronotropic-Bessel-Filter signals and Stochastic-Ischemia-Entropy indexes within the Hyper-Vascular-Tensor-Flux framework to ensure high-dimensional margin convergence.}
+
+\section{Expected Deliverables}
+\begin{itemize}
+    \item Production-ready Python codebase (\texttt{src/} and \texttt{scripts/}).
+    \item Trained model artifacts (\texttt{best\_model.joblib}, \texttt{preprocessing\_pipeline.joblib}).
+    \item Interactive 9-page Streamlit web dashboard (\texttt{src/app.py}).
+    \item Complete scientific LaTeX report and PDF document (\texttt{docs/Rapport\_MiniProject.pdf}).
+    \item Reproducible GitHub repository with simulated feature-branch workflow (\texttt{main}, \texttt{develop}, \texttt{feature/*}).
+\end{itemize}
+
+\section{Timeline \& Milestone Schedule}
+\begin{table}[H]
+\centering
+\caption{Mini-Project Implementation Schedule}
+\small
+\begin{tabular}{lll}
+\toprule
+\textbf{Phase / Milestone} & \textbf{Deliverable / Activity} & \textbf{Assigned Student} \\
+\midrule
+Phase 1: Audit \& EDA & Dataset acquisition, quality audit, hypothesis testing & Student AISD05 \\
+Phase 2: Modeling \& CV & Preprocessing pipeline, 6 ML classifiers, GridSearch & Student SIAD19 \\
+Phase 3: Web App \& Report & Streamlit app, 7-tier predictor, LaTeX PDF report & Student RSD20 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\end{document}
