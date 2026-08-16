@@ -2,14 +2,14 @@
 Streamlit Web Application for Heart Disease Risk Prediction.
 Interactive Data Mining Academic Dashboard containing 9 dedicated pages:
 1. Home & Executive Summary (Academic Objectives & Formal Metrics Framework)
-2. Dataset Explorer & Quality Audit
-3. EDA Dashboard (Univariate, Bivariate Panels, Correlations, PCA)
+2. Dataset Explorer & Quality Audit (Interactive Filtering & Breakdown)
+3. EDA Dashboard (Univariate, Bivariate, Categorical Panels, Correlations, PCA)
 4. Statistical Analysis Suite (FDR Corrected & Effect Sizes)
 5. Multi-Perspective Feature Importance Comparison
 6. Model Benchmark & Hyperparameters Transparency
-7. Categorized & Importance-Color-Coded Heart Disease Risk Predictor
+7. Categorized & Importance-Color-Coded Heart Disease Risk Predictor (Dynamic Top Output)
 8. Key Discoveries & Findings
-9. About, Student Matrix & Online Deployment Guide
+9. About & Student Contribution Matrix
 """
 
 import streamlit as st
@@ -111,6 +111,17 @@ st.markdown("""
         margin-top: 1rem;
         margin-bottom: 1rem;
     }
+    .param-badge {
+        background-color: #F1F5F9;
+        border: 1px solid #CBD5E1;
+        padding: 0.4rem 0.8rem;
+        border-radius: 0.4rem;
+        font-weight: 600;
+        color: #334155;
+        display: inline-block;
+        margin-right: 0.5rem;
+        margin-bottom: 0.5rem;
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -170,7 +181,7 @@ page = st.sidebar.radio(
         "6. Model Benchmark & Hyperparameters",
         "7. Heart Disease Risk Predictor",
         "8. Key Discoveries & Findings",
-        "9. About & Online Deployment"
+        "9. About & Student Matrix"
     ]
 )
 
@@ -216,24 +227,24 @@ if page == "1. Home & Executive Summary":
     with col1:
         st.subheader("🎯 Data Mining Objectives")
         st.markdown("""
-        - **Data Quality & Schema Audit:** Audit 9,000 patient records ($0$ missing values, $0$ duplicates) for target imbalance ($30.3\\%$ positive class prevalence).
-        - **Leakage-Free Preprocessing:** Standardize continuous features ($\mu=0, \sigma=1$) and One-Hot encode categories via `ColumnTransformer` inside training pipelines.
-        - **Statistical Hypothesis Suite:** Conduct 6 non-parametric tests ($\alpha=0.05$) incorporating Benjamini-Hochberg FDR correction and effect sizes (Cramér's V, Cohen's d, Odds Ratio).
+        - **Data Quality & Schema Audit:** Audit 9,000 patient records (0 missing values, 0 duplicates) for target imbalance (30.3% positive class prevalence).
+        - **Leakage-Free Preprocessing:** Standardize continuous features (mean=0, variance=1) and One-Hot encode categories via `ColumnTransformer` inside training pipelines.
+        - **Statistical Hypothesis Suite:** Conduct 6 non-parametric tests (significance threshold α = 0.05) incorporating Benjamini-Hochberg FDR correction and effect sizes (Cramér's V, Cohen's d, Odds Ratio).
         - **Multi-Classifier Benchmark:** Optimize and evaluate 6 algorithms (Zero-R, KNN, Decision Tree, Random Forest, Naive Bayes, SVM) via 5-Fold Stratified Cross-Validation.
         """)
         
     with col2:
-        st.subheader("📐 Formal Evaluation Metrics Framework")
+        st.subheader("📐 Evaluation Metrics Framework")
         st.markdown("""
-        To evaluate model performance under moderate class imbalance ($2.3:1$), we utilize formal metrics:
+        To evaluate model performance under moderate class imbalance (2.3:1 ratio), we utilize formal evaluation criteria:
         
-        - **Accuracy:** $\\text{Acc} = \\frac{TP + TN}{TP + TN + FP + FN} = 89.17\\%$
-        - **Precision:** $\\text{Prec} = \\frac{TP}{TP + FP} = 86.01\\%$ (Positive Predictive Value)
-        - **Recall / Sensitivity:** $\\text{Rec} = \\frac{TP}{TP + FN} = 76.70\\%$ (True Positive Rate)
-        - **Specificity:** $\\text{Spec} = \\frac{TN}{TN + FP} = 94.58\\%$ (True Negative Rate)
-        - **Weighted F1-Score:** $F_1 = 2 \\cdot \\frac{\\text{Prec} \\cdot \\text{Rec}}{\\text{Prec} + \\text{Rec}} = 0.8898$
-        - **ROC-AUC:** $\\text{AUC} = \\int_0^1 \\text{TPR}(f) d(\\text{FPR}) = 0.9422$
-        - **5-Fold Stratified Cross-Validation Score:** $0.8954 \\pm 0.0047$
+        - **Overall Accuracy:** Measures overall correctness across healthy and diseased patients (89.17%).
+        - **Precision (Positive Predictive Value):** Proportion of true disease cases among all positive predictions (86.01%).
+        - **Recall / Sensitivity (True Positive Rate):** Proportion of actual heart disease cases correctly caught (76.70%).
+        - **Specificity (True Negative Rate):** Proportion of healthy individuals correctly identified (94.58%).
+        - **Weighted F1-Score:** Harmonic mean of precision and recall accounting for class proportions (0.8898).
+        - **ROC-AUC (Area Under ROC Curve):** Overall discrimination capacity across all probability thresholds (0.9422).
+        - **5-Fold Stratified Cross-Validation Score:** Cross-validated training benchmark (0.8954 ± 0.0047).
         """)
 
 # ==========================================
@@ -245,18 +256,55 @@ elif page == "2. Dataset Explorer":
     if df is not None:
         st.markdown("""
         <div class="finding-box">
-        <strong>Dataset Audit Note (Section 5 Requirement):</strong><br>
+        <strong>Dataset Quality & Size Audit:</strong><br>
         Audited dataset <code>uditjain13/heart-disease-risk-2026</code> contains <strong>9,000 patient records</strong> and <strong>27 columns</strong> (1 identifier <code>patient_id</code>, 25 feature attributes, 1 binary target <code>has_heart_disease</code>).
         </div>
         """, unsafe_allow_html=True)
         
-        tab1, tab2, tab3 = st.tabs(["Preview Raw Data", "Data Dictionary & Types", "Summary Statistics"])
+        tab1, tab2, tab3, tab4 = st.tabs([
+            "🔍 Interactive Data Filter",
+            "📊 Categorical Attribute Inspector",
+            "📋 Data Dictionary & Types",
+            "📈 Summary Statistics"
+        ])
         
         with tab1:
-            rows_to_show = st.slider("Select row count to display", 5, 100, 10)
-            st.dataframe(df.head(rows_to_show), width="stretch")
+            st.subheader("Interactive Patient Data Filter")
+            f_col1, f_col2, f_col3 = st.columns(3)
+            with f_col1:
+                target_filter = st.multiselect("Filter by Target Class", [0, 1], default=[0, 1], format_func=lambda x: "Heart Disease (1)" if x == 1 else "No Disease (0)")
+            with f_col2:
+                age_range = st.slider("Age Range Filter", int(df["age"].min()), int(df["age"].max()), (int(df["age"].min()), int(df["age"].max())))
+            with f_col3:
+                search_query = st.text_input("Search Patient Records", "")
+                
+            filtered_df = df[
+                (df["has_heart_disease"].isin(target_filter)) &
+                (df["age"] >= age_range[0]) &
+                (df["age"] <= age_range[1])
+            ]
+            
+            if search_query:
+                filtered_df = filtered_df[filtered_df.astype(str).apply(lambda row: row.str.contains(search_query, case=False).any(), axis=1)]
+                
+            st.write(f"Showing **{len(filtered_df):,}** matching patient records out of **{len(df):,}** total:")
+            st.dataframe(filtered_df.head(100), width="stretch")
             
         with tab2:
+            st.subheader("Categorical Value Counts & Proportions")
+            cat_col = st.selectbox("Select Categorical Attribute to Analyze:", ["chest_pain_type", "smoker_status", "exercise_induced_angina", "family_history", "sex"])
+            
+            c_col1, c_col2 = st.columns(2)
+            with c_col1:
+                st.dataframe(df[cat_col].value_counts().reset_index().rename(columns={"index": cat_col, "count": "Patient Count"}), width="stretch")
+            with c_col2:
+                fig_cat, ax_cat = plt.subplots(figsize=(6, 4))
+                df[cat_col].value_counts().plot(kind="pie", autopct="%1.1f%%", colors=sns.color_palette("Set2"), ax=ax_cat)
+                ax_cat.set_ylabel("")
+                ax_cat.set_title(f"Percentage Distribution: {cat_col}", fontsize=11, fontweight="bold")
+                st.pyplot(fig_cat)
+                
+        with tab3:
             dtype_df = pd.DataFrame({
                 "Column Name": df.columns,
                 "Data Type": df.dtypes.astype(str),
@@ -266,7 +314,7 @@ elif page == "2. Dataset Explorer":
             })
             st.dataframe(dtype_df, width="stretch")
             
-        with tab3:
+        with tab4:
             st.dataframe(df.describe().T[["mean", "std", "min", "25%", "50%", "75%", "max"]], width="stretch")
 
 # ==========================================
@@ -275,27 +323,33 @@ elif page == "2. Dataset Explorer":
 elif page == "3. EDA Dashboard":
     st.title("📊 Exploratory Data Analysis (EDA)")
     
-    tab1, tab2, tab3, tab4, tab5 = st.tabs([
-        "Interactive Feature Inspector",
-        "Target Distribution & Class Audit",
-        "Bivariate Boxplots & Violins",
-        "Correlation Matrix",
+    tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
+        "Density Inspector",
+        "Categorical Proportions",
+        "Target Class Audit",
+        "Bivariate Boxplots",
+        "Correlation Heatmap",
         "PCA 2D Projection"
     ])
     
     with tab1:
-        st.subheader("Interactive Numerical Distribution Inspector")
+        st.subheader("Interactive Feature Density Plot")
         num_cols = ["age", "st_depression", "max_heart_rate_achieved", "ldl", "hdl", "hba1c", "resting_bp_systolic", "bmi", "stress_score"]
-        selected_feat = st.selectbox("Select Clinical Feature to Inspect:", num_cols, index=0)
+        selected_feat = st.selectbox("Select Continuous Clinical Biomarker:", num_cols, index=0)
         
         if df is not None:
             fig_ins, ax_ins = plt.subplots(figsize=(9, 4.5))
             sns.histplot(data=df, x=selected_feat, hue="has_heart_disease", kde=True, ax=ax_ins,
                          palette=["#2b5c8f", "#d95f02"], element="step", stat="density", common_norm=False)
-            ax_ins.set_title(f"Density Distribution of {selected_feat.upper()} Stratified by Heart Disease", fontsize=12, fontweight="bold")
+            ax_ins.set_title(f"Density Distribution of {selected_feat.upper()} Stratified by Target Class", fontsize=12, fontweight="bold")
             st.pyplot(fig_ins)
             
     with tab2:
+        fig_cat_brk = FIGURES_DIR / "categorical_breakdowns.png"
+        if fig_cat_brk.exists():
+            st.image(str(fig_cat_brk), width="stretch")
+            
+    with tab3:
         fig1 = FIGURES_DIR / "target_distribution.png"
         fig3 = FIGURES_DIR / "feature_distributions.png"
         if fig1.exists():
@@ -303,21 +357,20 @@ elif page == "3. EDA Dashboard":
         if fig3.exists():
             st.image(str(fig3), width="stretch")
             
-    with tab3:
+    with tab4:
         fig_biv = FIGURES_DIR / "bivariate_panel.png"
         if fig_biv.exists():
             st.image(str(fig_biv), width="stretch")
             
-    with tab4:
+    with tab5:
         fig2 = FIGURES_DIR / "correlation_matrix.png"
         if fig2.exists():
             st.image(str(fig2), width="stretch")
             
-    with tab5:
+    with tab6:
         fig_pca = FIGURES_DIR / "pca_bivariate_scatter.png"
         if fig_pca.exists():
             st.image(str(fig_pca), width="stretch")
-            st.caption("Figure: 2D Principal Component Analysis (PCA) projection of continuous clinical biomarker space.")
 
 # ==========================================
 # PAGE 4 — STATISTICAL ANALYSIS
@@ -325,7 +378,7 @@ elif page == "3. EDA Dashboard":
 elif page == "4. Statistical Analysis Suite":
     st.title("🧪 Statistical Hypothesis Testing Suite")
     st.markdown("""
-    Rigorous statistical tests conducted with significance threshold $\\alpha = 0.05$.
+    Rigorous statistical hypothesis tests conducted with significance threshold **α = 0.05**.
     Includes Benjamini-Hochberg False Discovery Rate (FDR) multiple testing corrections and practical effect sizes.
     """)
     
@@ -348,7 +401,7 @@ elif page == "4. Statistical Analysis Suite":
                                 f'<span style="background:#059669;color:white;padding:3px 8px;border-radius:4px;font-weight:bold;">FDR Sig: {h["significant_fdr"]}</span>', unsafe_allow_html=True)
                     
         st.markdown("---")
-        st.subheader("Summary Table of Statistical Hypotheses")
+        st.subheader("Summary Table of Statistical Hypotheses (α = 0.05)")
         stat_summary_df = pd.DataFrame([
             {
                 "ID": h["id"],
@@ -399,17 +452,48 @@ elif page == "6. Model Benchmark & Hyperparameters":
                        f"Weighted F1: {model_metadata.get('test_metrics', {}).get('F1 (Weighted)')}, "
                        f"ROC-AUC: {model_metadata.get('test_metrics', {}).get('ROC-AUC')})")
             
-        st.subheader("2. Optimal Hyperparameters Selected via 5-Fold Stratified GridSearchCV")
-        hyperparams_df = pd.DataFrame([
-            {"Model": "Zero-R Baseline", "Optimal Hyperparameters": "strategy='most_frequent'", "CV Score": "0.5725"},
-            {"Model": "K-Nearest Neighbors", "Optimal Hyperparameters": "metric='euclidean', n_neighbors=11, weights='uniform'", "CV Score": "0.8069"},
-            {"Model": "Decision Tree", "Optimal Hyperparameters": "criterion='entropy', max_depth=7, min_samples_leaf=4, min_samples_split=10", "CV Score": "0.8561"},
-            {"Model": "Random Forest", "Optimal Hyperparameters": "n_estimators=100, max_depth=10, min_samples_split=2, max_features='sqrt'", "CV Score": "0.8757"},
-            {"Model": "Naive Bayes", "Optimal Hyperparameters": "var_smoothing=1e-09", "CV Score": "0.8513"},
-            {"Model": "Support Vector Machine (Best)", "Optimal Hyperparameters": "C=1.0, kernel='rbf', gamma='scale', probability=True", "CV Score": "0.8954"}
-        ])
-        st.table(hyperparams_df)
+        st.subheader("2. Optimal Model Hyperparameters Selected via 5-Fold Stratified Cross-Validation")
         
+        models_params = [
+            {
+                "Model": "Zero-R Baseline",
+                "Parameters": [("Strategy", "Most Frequent Majority Class")],
+                "CV Score": "0.5725"
+            },
+            {
+                "Model": "K-Nearest Neighbors",
+                "Parameters": [("Distance Metric", "Euclidean"), ("Neighbors (k)", "11"), ("Weights", "Uniform")],
+                "CV Score": "0.8069"
+            },
+            {
+                "Model": "Decision Tree",
+                "Parameters": [("Split Criterion", "Entropy / Information Gain"), ("Max Depth", "7"), ("Min Samples Leaf", "4"), ("Min Samples Split", "10")],
+                "CV Score": "0.8561"
+            },
+            {
+                "Model": "Random Forest",
+                "Parameters": [("Estimators", "100 Trees"), ("Max Depth", "10 Trees"), ("Max Features", "Square Root (sqrt)"), ("Min Samples Split", "2")],
+                "CV Score": "0.8757"
+            },
+            {
+                "Model": "Naive Bayes",
+                "Parameters": [("Model Variant", "Gaussian Naive Bayes"), ("Variance Smoothing", "1e-09")],
+                "CV Score": "0.8513"
+            },
+            {
+                "Model": "Support Vector Machine (Best Classifier)",
+                "Parameters": [("Kernel Function", "Radial Basis Function (RBF)"), ("Regularization (C)", "1.0"), ("Gamma Scaling", "Scale"), ("Probability Estimation", "Enabled (Platt Scaling)")],
+                "CV Score": "0.8954"
+            }
+        ]
+        
+        for mp in models_params:
+            with st.expander(f"⚙️ {mp['Model']} — 5-Fold CV Score: {mp['CV Score']}", expanded=(mp['Model'].startswith("Support Vector"))):
+                st.write("**Optimal Hyperparameter Configuration:**")
+                badges_html = "".join([f'<span class="param-badge"><strong>{k}:</strong> {v}</span>' for k, v in mp["Parameters"]])
+                st.markdown(badges_html, unsafe_allow_html=True)
+                
+        st.markdown("---")
         fig_roc = FIGURES_DIR / "roc_curves.png"
         fig_cm = FIGURES_DIR / "confusion_matrices.png"
         
@@ -424,10 +508,10 @@ elif page == "6. Model Benchmark & Hyperparameters":
                 st.image(str(fig_cm), width="stretch")
 
 # ==========================================
-# PAGE 7 — CATEGORIZED RISK PREDICTOR
+# PAGE 7 — CATEGORIZED DYNAMIC RISK PREDICTOR
 # ==========================================
 elif page == "7. Heart Disease Risk Predictor":
-    st.title("🫀 Dynamic Patient Heart Disease Risk Predictor")
+    st.title("🫀 Patient Heart Disease Risk Predictor")
     
     st.markdown("""
     <div class="disclaimer-box">
@@ -438,119 +522,124 @@ elif page == "7. Heart Disease Risk Predictor":
     """, unsafe_allow_html=True)
     
     if best_model is not None and preprocessor_pipeline is not None:
-        st.subheader("Input Patient Characteristics & Clinical Biomarkers")
-        st.markdown("Features are grouped into 4 clinical categories and color-coded by importance gradient (🔴 **High Impact** $\\rightarrow$ 🟧 **Moderate-High** $\\rightarrow$ 🟨 **Moderate** $\\rightarrow$ 🟩 **Behavioral/Lifestyle**):")
         
-        with st.form("patient_prediction_form"):
-            # Category 1: High Impact Cardiac Risk Markers
-            st.markdown("#### 🔴 Category 1: Primary Cardiac Risk Markers <span class='badge-critical'>CRITICAL IMPACT</span>", unsafe_allow_html=True)
-            c1_1, c1_2, c1_3, c1_4 = st.columns(4)
-            with c1_1:
-                max_hr = st.number_input("Max Heart Rate (bpm)", 60, 220, 150, help="🔴 Highest negative correlation (-0.58)")
-            with c1_2:
-                st_dep = st.number_input("ST Depression (mm)", 0.0, 7.0, 1.2, help="🔴 Highest positive correlation (+0.36)")
-            with c1_3:
-                cp_type = st.selectbox("Chest Pain Type", ["Asymptomatic", "Non-Anginal Pain", "Atypical Angina", "Typical Angina"])
-            with c1_4:
-                ex_angina = st.checkbox("Exercise Induced Angina", value=False)
-                
-            st.markdown("---")
-            # Category 2: Metabolic & Blood Biomarkers
-            st.markdown("#### 🟧 Category 2: Metabolic & Blood Chemistry Biomarkers <span class='badge-high'>HIGH IMPACT</span>", unsafe_allow_html=True)
-            c2_1, c2_2, c2_3, c2_4, c2_5, c2_6 = st.columns(6)
-            with c2_1:
-                ldl = st.number_input("LDL (mg/dL)", 30, 250, 125)
-            with c2_2:
-                hdl = st.number_input("HDL (mg/dL)", 15, 120, 48)
-            with c2_3:
-                chol_total = st.number_input("Total Chol (mg/dL)", 100, 400, 210)
-            with c2_4:
-                hba1c = st.number_input("HbA1c (%)", 4.0, 14.0, 5.8)
-            with c2_5:
-                fbs = st.number_input("Fasting BS (mg/dL)", 60, 250, 110)
-            with c2_6:
-                triglycerides = st.number_input("Triglycerides", 30, 500, 160)
-
-            st.markdown("---")
-            # Category 3: Hemodynamic & Demographic Vitals
-            st.markdown("#### 🟨 Category 3: Hemodynamic Vitals & Demographics <span class='badge-moderate'>MODERATE IMPACT</span>", unsafe_allow_html=True)
-            c3_1, c3_2, c3_3, c3_4, c3_5, c3_6 = st.columns(6)
-            with c3_1:
-                age = st.number_input("Age (years)", 18, 100, 55)
-            with c3_2:
-                sex = st.selectbox("Sex", ["Male", "Female"])
-            with c3_3:
-                sys_bp = st.number_input("Systolic BP (mmHg)", 80, 220, 130)
-            with c3_4:
-                dia_bp = st.number_input("Diastolic BP (mmHg)", 50, 140, 82)
-            with c3_5:
-                resting_hr = st.number_input("Resting HR (bpm)", 40, 130, 75)
-            with c3_6:
-                bmi = st.number_input("BMI (kg/m²)", 14.0, 50.0, 26.5)
-
-            st.markdown("---")
-            # Category 4: Lifestyle & Behavioral Factors
-            st.markdown("#### 🟩 Category 4: Lifestyle & Behavioral Parameters <span class='badge-lifestyle'>BEHAVIORAL/LIFESTYLE</span>", unsafe_allow_html=True)
-            c4_1, c4_2, c4_3, c4_4, c4_5 = st.columns(5)
-            with c4_1:
-                smoker = st.selectbox("Smoker Status", ["Never", "Former", "Current"])
-                exercise_min = st.number_input("Exercise Min/Wk", 0, 600, 150)
-            with c4_2:
-                daily_steps = st.number_input("Daily Steps", 500, 25000, 6500)
-                diet_score = st.number_input("Diet Score (0-100)", 0.0, 100.0, 60.0)
-            with c4_3:
-                stress = st.number_input("Stress Score (0-100)", 0.0, 100.0, 45.0)
-                alcohol = st.number_input("Alcohol Units/Wk", 0.0, 60.0, 4.0)
-            with c4_4:
-                sleep_hrs = st.number_input("Sleep Hrs/Day", 3.0, 12.0, 7.0)
-                wearable = st.checkbox("Wearable Owner", value=True)
-            with c4_5:
-                family_hist = st.checkbox("Family History", value=False)
-
-            st.markdown("---")
-            submit_btn = st.form_submit_button("🔍 Compute Heart Disease Risk Score")
+        # -------------------------------------------------------------
+        # STEP 1: INTERACTIVE INPUT CONTROLS (REAL-TIME UPDATING)
+        # -------------------------------------------------------------
+        st.subheader("⚙️ Input Patient Characteristics & Clinical Biomarkers")
+        st.markdown("Features are categorized into 4 clinical groups with color-gradient badges (🔴 **Critical** $\\rightarrow$ 🟧 **High** $\\rightarrow$ 🟨 **Moderate** $\\rightarrow$ 🟩 **Behavioral/Lifestyle**):")
+        
+        # Category 1: High Impact Cardiac Risk Markers
+        st.markdown("#### 🔴 Category 1: Primary Cardiac Risk Markers <span class='badge-critical'>CRITICAL IMPACT</span>", unsafe_allow_html=True)
+        c1_1, c1_2, c1_3, c1_4 = st.columns(4)
+        with c1_1:
+            max_hr = st.number_input("Max Heart Rate (bpm)", 60, 220, 150, help="🔴 Highest negative correlation (-0.58)")
+        with c1_2:
+            st_dep = st.number_input("ST Depression (mm)", 0.0, 7.0, 1.2, help="🔴 Highest positive correlation (+0.36)")
+        with c1_3:
+            cp_type = st.selectbox("Chest Pain Type", ["Asymptomatic", "Non-Anginal Pain", "Atypical Angina", "Typical Angina"])
+        with c1_4:
+            ex_angina = st.checkbox("Exercise Induced Angina", value=False)
             
-        if submit_btn:
-            patient_dict = {
-                "age": [age], "sex": [sex], "resting_bp_systolic": [sys_bp], "resting_bp_diastolic": [dia_bp],
-                "cholesterol_total": [chol_total], "hdl": [hdl], "ldl": [ldl], "triglycerides": [triglycerides],
-                "fasting_blood_sugar": [fbs], "hba1c": [hba1c], "bmi": [bmi], "resting_heart_rate": [resting_hr],
-                "max_heart_rate_achieved": [max_hr], "chest_pain_type": [cp_type], "exercise_induced_angina": [ex_angina],
-                "st_depression": [st_dep], "family_history": [family_hist], "smoker_status": [smoker],
-                "alcohol_units_per_week": [alcohol], "exercise_minutes_per_week": [exercise_min],
-                "sleep_hours": [sleep_hrs], "stress_score": [stress], "wearable_owner": [wearable],
-                "daily_steps": [daily_steps], "diet_quality_score": [diet_score]
-            }
-            patient_df = pd.DataFrame(patient_dict)
-            patient_df["cholesterol_hdl_ratio"] = patient_df["cholesterol_total"] / np.maximum(patient_df["hdl"], 1.0)
-            patient_df["pulse_pressure"] = patient_df["resting_bp_systolic"] - patient_df["resting_bp_diastolic"]
-            patient_df["mean_arterial_pressure"] = patient_df["resting_bp_diastolic"] + (patient_df["pulse_pressure"] / 3.0)
+        st.markdown("---")
+        # Category 2: Metabolic & Blood Biomarkers
+        st.markdown("#### 🟧 Category 2: Metabolic & Blood Chemistry Biomarkers <span class='badge-high'>HIGH IMPACT</span>", unsafe_allow_html=True)
+        c2_1, c2_2, c2_3, c2_4, c2_5, c2_6 = st.columns(6)
+        with c2_1:
+            ldl = st.number_input("LDL (mg/dL)", 30, 250, 125)
+        with c2_2:
+            hdl = st.number_input("HDL (mg/dL)", 15, 120, 48)
+        with c2_3:
+            chol_total = st.number_input("Total Chol (mg/dL)", 100, 400, 210)
+        with c2_4:
+            hba1c = st.number_input("HbA1c (%)", 4.0, 14.0, 5.8)
+        with c2_5:
+            fbs = st.number_input("Fasting BS (mg/dL)", 60, 250, 110)
+        with c2_6:
+            triglycerides = st.number_input("Triglycerides", 30, 500, 160)
+
+        st.markdown("---")
+        # Category 3: Hemodynamic & Demographic Vitals
+        st.markdown("#### 🟨 Category 3: Hemodynamic Vitals & Demographics <span class='badge-moderate'>MODERATE IMPACT</span>", unsafe_allow_html=True)
+        c3_1, c3_2, c3_3, c3_4, c3_5, c3_6 = st.columns(6)
+        with c3_1:
+            age = st.number_input("Age (years)", 18, 100, 55)
+        with c3_2:
+            sex = st.selectbox("Sex", ["Male", "Female"])
+        with c3_3:
+            sys_bp = st.number_input("Systolic BP (mmHg)", 80, 220, 130)
+        with c3_4:
+            dia_bp = st.number_input("Diastolic BP (mmHg)", 50, 140, 82)
+        with c3_5:
+            resting_hr = st.number_input("Resting HR (bpm)", 40, 130, 75)
+        with c3_6:
+            bmi = st.number_input("BMI (kg/m²)", 14.0, 50.0, 26.5)
+
+        st.markdown("---")
+        # Category 4: Lifestyle & Behavioral Factors
+        st.markdown("#### 🟩 Category 4: Lifestyle & Behavioral Parameters <span class='badge-lifestyle'>BEHAVIORAL/LIFESTYLE</span>", unsafe_allow_html=True)
+        c4_1, c4_2, c4_3, c4_4, c4_5 = st.columns(5)
+        with c4_1:
+            smoker = st.selectbox("Smoker Status", ["Never", "Former", "Current"])
+            exercise_min = st.number_input("Exercise Min/Wk", 0, 600, 150)
+        with c4_2:
+            daily_steps = st.number_input("Daily Steps", 500, 25000, 6500)
+            diet_score = st.number_input("Diet Score (0-100)", 0.0, 100.0, 60.0)
+        with c4_3:
+            stress = st.number_input("Stress Score (0-100)", 0.0, 100.0, 45.0)
+            alcohol = st.number_input("Alcohol Units/Wk", 0.0, 60.0, 4.0)
+        with c4_4:
+            sleep_hrs = st.number_input("Sleep Hrs/Day", 3.0, 12.0, 7.0)
+            wearable = st.checkbox("Wearable Owner", value=True)
+        with c4_5:
+            family_hist = st.checkbox("Family History", value=False)
+
+        # -------------------------------------------------------------
+        # STEP 2: DYNAMIC REAL-TIME PREDICTION COMPUTATION
+        # -------------------------------------------------------------
+        patient_dict = {
+            "age": [age], "sex": [sex], "resting_bp_systolic": [sys_bp], "resting_bp_diastolic": [dia_bp],
+            "cholesterol_total": [chol_total], "hdl": [hdl], "ldl": [ldl], "triglycerides": [triglycerides],
+            "fasting_blood_sugar": [fbs], "hba1c": [hba1c], "bmi": [bmi], "resting_heart_rate": [resting_hr],
+            "max_heart_rate_achieved": [max_hr], "chest_pain_type": [cp_type], "exercise_induced_angina": [ex_angina],
+            "st_depression": [st_dep], "family_history": [family_hist], "smoker_status": [smoker],
+            "alcohol_units_per_week": [alcohol], "exercise_minutes_per_week": [exercise_min],
+            "sleep_hours": [sleep_hrs], "stress_score": [stress], "wearable_owner": [wearable],
+            "daily_steps": [daily_steps], "diet_quality_score": [diet_score]
+        }
+        patient_df = pd.DataFrame(patient_dict)
+        patient_df["cholesterol_hdl_ratio"] = patient_df["cholesterol_total"] / np.maximum(patient_df["hdl"], 1.0)
+        patient_df["pulse_pressure"] = patient_df["resting_bp_systolic"] - patient_df["resting_bp_diastolic"]
+        patient_df["mean_arterial_pressure"] = patient_df["resting_bp_diastolic"] + (patient_df["pulse_pressure"] / 3.0)
+        
+        patient_proc = preprocessor_pipeline.transform(patient_df)
+        pred_class = int(best_model.predict(patient_proc)[0])
+        
+        if hasattr(best_model, "predict_proba"):
+            pred_prob = float(best_model.predict_proba(patient_proc)[0][1])
+        else:
+            pred_prob = 1.0 if pred_class == 1 else 0.0
             
-            patient_proc = preprocessor_pipeline.transform(patient_df)
-            pred_class = int(best_model.predict(patient_proc)[0])
-            
-            if hasattr(best_model, "predict_proba"):
-                pred_prob = float(best_model.predict_proba(patient_proc)[0][1])
+        # -------------------------------------------------------------
+        # STEP 3: PROMINENT TOP PREDICTION OUTPUT PANEL
+        # -------------------------------------------------------------
+        st.markdown("---")
+        st.subheader("🎯 Real-Time Clinical Risk Prediction & Gauge Output")
+        res_col1, res_col2, res_col3 = st.columns(3)
+        
+        with res_col1:
+            if pred_class == 1:
+                st.error(f"### ⚠️ HIGH RISK PREDICTED\nEstimated Risk Probability: **{pred_prob:.1%}**")
             else:
-                pred_prob = 1.0 if pred_class == 1 else 0.0
+                st.success(f"### ✅ LOW RISK PREDICTED\nEstimated Risk Probability: **{pred_prob:.1%}**")
                 
-            st.markdown("---")
-            st.subheader("🎯 Clinical Prediction & Risk Gauge Output")
-            res_col1, res_col2, res_col3 = st.columns(3)
+        with res_col2:
+            st.metric("Model Engine", model_metadata.get("best_model_name", "Support Vector Machine"))
+            st.metric("Model Test ROC-AUC", f"{model_metadata.get('test_metrics', {}).get('ROC-AUC', 0.9422):.4f}")
             
-            with res_col1:
-                if pred_class == 1:
-                    st.error(f"### ⚠️ HIGH RISK PREDICTED\nEstimated Probability: **{pred_prob:.1%}**")
-                else:
-                    st.success(f"### ✅ LOW RISK PREDICTED\nEstimated Probability: **{pred_prob:.1%}**")
-                    
-            with res_col2:
-                st.metric("Model Engine", model_metadata.get("best_model_name", "Support Vector Machine"))
-                st.metric("Model Test ROC-AUC", f"{model_metadata.get('test_metrics', {}).get('ROC-AUC', 0.9422):.4f}")
-                
-            with res_col3:
-                st.metric("Model Test Accuracy", f"{model_metadata.get('test_metrics', {}).get('Accuracy', 0.8917):.2%}")
-                st.metric("Model Test Recall", f"{model_metadata.get('test_metrics', {}).get('Recall', 0.7670):.2%}")
+        with res_col3:
+            st.metric("Model Test Accuracy", f"{model_metadata.get('test_metrics', {}).get('Accuracy', 0.8917):.2%}")
+            st.metric("Model Test Recall", f"{model_metadata.get('test_metrics', {}).get('Recall', 0.7670):.2%}")
 
 # ==========================================
 # PAGE 8 — KEY DISCOVERIES & FINDINGS
@@ -573,10 +662,10 @@ elif page == "8. Key Discoveries & Findings":
                 st.markdown("---")
 
 # ==========================================
-# PAGE 9 — ABOUT & ONLINE DEPLOYMENT
+# PAGE 9 — ABOUT & STUDENT MATRIX
 # ==========================================
-elif page == "9. About & Online Deployment":
-    st.title("ℹ️ About, Student Matrix & Online Publishing Guide")
+elif page == "9. About & Student Matrix":
+    st.title("ℹ️ About & Student Contribution Matrix")
     
     st.markdown("""
     > ⚠️ **DEMONSTRATION GIT WORKFLOW NOTICE**  
@@ -592,21 +681,7 @@ elif page == "9. About & Online Deployment":
     ]
     st.table(pd.DataFrame(contrib_data))
     
-    st.subheader("🌐 2. How to Publish This Interactive App Online Free (Streamlit Cloud)")
-    st.markdown("""
-    You can publish this interactive website online for free using **Streamlit Community Cloud**:
-    
-    1. Sign in to **[share.streamlit.io](https://share.streamlit.io)** using your GitHub account (`hosniadilemp-a11y`).
-    2. Click **"New App"** and enter your repository details:
-       - **Repository:** `hosniadilemp-a11y/DataMiningProjectExample`
-       - **Branch:** `main`
-       - **Main file path:** `src/app.py`
-    3. Click **"Deploy!"**
-    
-    Within 1 minute, your interactive Data Mining application will be live online with a public URL (e.g. `https://dataminingprojectexample.streamlit.app`).
-    """)
-    
-    st.subheader("3. Software Stack & Dependencies")
+    st.subheader("2. Software Stack & Dependencies")
     st.markdown("""
     - **Language:** Python 3.13 / 3.10
     - **Machine Learning:** `scikit-learn`, `scipy`, `numpy`, `pandas`, `pyarrow`

@@ -14,6 +14,7 @@ from src.feature_analysis import compute_multi_perspective_importance
 from src.findings import generate_key_findings
 from src.visualization import (
     plot_target_distribution,
+    plot_categorical_breakdowns,
     plot_correlation_matrix,
     plot_feature_distributions,
     plot_bivariate_panel,
@@ -41,6 +42,7 @@ def run_all_asset_generation():
     # 4. Generate Figures
     print("\n[4/4] Generating Publication Figures in docs/figures/...")
     plot_target_distribution(save=True)
+    plot_categorical_breakdowns(save=True)
     plot_correlation_matrix(save=True)
     plot_feature_distributions(save=True)
     plot_bivariate_panel(save=True)

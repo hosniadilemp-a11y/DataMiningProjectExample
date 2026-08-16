@@ -64,6 +64,34 @@ def plot_target_distribution(df: pd.DataFrame = None, save: bool = True) -> plt.
         fig.savefig(FIGURES_DIR / "target_distribution.png", dpi=300, bbox_inches="tight")
     return fig
 
+def plot_categorical_breakdowns(df: pd.DataFrame = None, save: bool = True) -> plt.Figure:
+    """Plot stacked proportions of categorical risk factors."""
+    if df is None:
+        df = load_raw_data()
+        
+    cats = ["chest_pain_type", "smoker_status", "exercise_induced_angina", "family_history"]
+    titles = ["Chest Pain Type", "Smoker Status", "Exercise Angina", "Family History"]
+    
+    fig, axes = plt.subplots(2, 2, figsize=(12, 8))
+    axes = axes.flatten()
+    
+    for i, (cat, title) in enumerate(zip(cats, titles)):
+        ax = axes[i]
+        ct = pd.crosstab(df[cat], df[TARGET_COL], normalize="index") * 100
+        ct.plot(kind="bar", stacked=True, color=["#2b5c8f", "#d95f02"], ax=ax, width=0.5, edgecolor="black", linewidth=0.5)
+        ax.set_title(title, fontsize=11, fontweight="bold")
+        ax.set_ylabel("Percentage (%)", fontsize=9)
+        ax.set_xlabel("")
+        ax.legend(["No Disease", "Heart Disease"], loc="upper right")
+        ax.tick_params(axis='x', rotation=15)
+        
+    plt.suptitle("Categorical Predictor Proportions Stratified by Target Class", fontsize=14, fontweight="bold", y=1.02)
+    plt.tight_layout()
+    
+    if save:
+        fig.savefig(FIGURES_DIR / "categorical_breakdowns.png", dpi=300, bbox_inches="tight")
+    return fig
+
 def plot_correlation_matrix(df: pd.DataFrame = None, save: bool = True) -> plt.Figure:
     """Plot top numerical feature correlation matrix."""
     if df is None:
@@ -126,6 +154,7 @@ def plot_bivariate_panel(df: pd.DataFrame = None, save: bool = True) -> plt.Figu
     for i, (pred, label) in enumerate(zip(predictors, labels)):
         ax = axes[i]
         sns.boxplot(data=df, x=TARGET_COL, y=pred, hue=TARGET_COL, palette=["#2b5c8f", "#d95f02"], ax=ax, legend=False)
+        ax.set_xticks([0, 1])
         ax.set_xticklabels(["No Disease", "Heart Disease"])
         ax.set_title(label, fontsize=11, fontweight="bold")
         ax.set_xlabel("")
