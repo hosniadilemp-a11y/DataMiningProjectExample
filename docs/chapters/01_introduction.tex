@@ -1,0 +1,36 @@
+\chapter{Introduction \& Research Context}
+
+\section{Background \& Motivation}
+Cardiovascular diseases (CVDs) represent the single leading cause of global mortality. According to the World Health Organization (WHO), an estimated 17.9 million people die from CVDs each year, accounting for approximately 32\% of all deaths worldwide \cite{who2024}. Coronary heart disease, myocardial infarction, and cardiac arrhythmias constitute the overwhelming majority of these fatalities. Early, non-invasive identification of individuals at high risk allows targeted clinical interventions, pharmacological therapy, and lifestyle modifications long before catastrophic clinical events occur.
+
+With the proliferation of Electronic Health Records (EHRs), routine laboratory panels, and digital health monitoring, massive clinical datasets are generated daily. However, clinical decision-making often relies on simplified heuristic risk calculators (such as the Framingham Risk Score) that assume linear relationships and omit non-linear physiological interactions. Data Mining and Machine Learning offer a modern paradigm capable of extracting subtle, high-dimensional patterns across diverse physiological, blood chemistry, demographic, and behavioral parameters \cite{han2011data}.
+
+\section{Problem Statement}
+The central challenge in cardiovascular risk modeling lies in accurately classifying patient risk status while accounting for class imbalance, high-dimensional non-linear feature interactions, and physiological confounding. In this study, the Data Mining task is formulated as a supervised binary classification problem:
+\begin{tcolorbox}[colback=cardblue,colframe=navyblue,title=\textbf{Core Data Mining Task Formulation}]
+Given an input vector $\mathbf{x}_i \in \mathbb{R}^d$ representing $25$ clinical biomarkers, demographic attributes, and lifestyle parameters for patient $i$, learn a mapping function $f: \mathbb{R}^d \rightarrow \{0, 1\}$ that predicts the binary target $y_i \in \{0, 1\}$, where $y_i = 1$ indicates presence of heart disease risk and $y_i = 0$ indicates healthy control.
+\end{tcolorbox}
+
+\section{Research Questions (RQs)}
+To ensure a structured scientific investigation, this study addresses six explicit research questions:
+\begin{itemize}
+    \item \textbf{RQ1 (Data Quality \& Imbalance):} What is the distribution of the target class in the audited population ($N=9,000$), and how does moderate class imbalance impact evaluation metric selection?
+    \item \textbf{RQ2 (Bivariate Statistical Association):} Which clinical features (such as chest pain type, ST segment depression, and maximum exercise heart rate) display statistically significant association with heart disease risk under non-parametric testing ($\alpha = 0.05$)?
+    \item \textbf{RQ3 (Multiple Testing Correction):} Do statistical associations remain robust after applying Benjamini-Hochberg False Discovery Rate (FDR) corrections?
+    \item \textbf{RQ4 (Predictive Algorithm Performance):} Which supervised classification algorithm (Zero-R, KNN, Decision Tree, Random Forest, Naive Bayes, or Support Vector Machine) achieves optimal discrimination on unseen hold-out test data?
+    \item \textbf{RQ5 (Feature Importance Consensus):} Does consensus exist across statistical (Mutual Information), impurity-based (Tree Gini), and model-agnostic (Permutation Importance) feature ranking methods?
+    \item \textbf{RQ6 (Clinical Translation \& Risk Stratification):} How can continuous model output probabilities $P(Y=1 \mid \mathbf{x})$ be operationalized into a 7-tier clinical risk stratification framework for primary care decision support?
+\end{itemize}
+
+\section{Summary of Scientific Contributions}
+This research project delivers eight tangible contributions:
+\begin{enumerate}
+    \item \textbf{Dataset Quality Audit:} Complete data quality inspection of 9,000 patient records from Kaggle dataset \texttt{uditjain13/heart\_disease\_risk\_2026} with zero missing values and zero duplicate records.
+    \item \textbf{Leakage-Free Preprocessing Pipeline:} Encapsulation of scaling, One-Hot encoding, and domain feature engineering inside scikit-learn \texttt{ColumnTransformer} objects fitted strictly on training data.
+    \item \textbf{Exploratory Data Analysis (EDA):} Comprehensive univariate, bivariate, multivariate, and PCA 2D projections.
+    \item \textbf{Rigorous Hypothesis Suite:} Execution of 6 non-parametric statistical hypothesis tests with FDR corrections, Cramér's V, Cohen's d, Rank-Biserial $r$, and Odds Ratios.
+    \item \textbf{Multi-Model Supervised Benchmark:} Optimization and evaluation of 6 classifiers using 5-Fold Stratified Cross-Validation and hyperparameter grid search.
+    \item \textbf{Multi-Perspective Feature Importance:} Comparative ranking across four distinct statistical and machine learning perspectives.
+    \item \textbf{Interactive Web Dashboard:} A 9-page Streamlit web application providing a dynamic real-time risk predictor with interactive sliders.
+    \item \textbf{7-Tier Risk Stratification Framework:} Operational medical risk scale ($0\%$ to $100\%$) translating machine learning probabilities into clinical triage categories.
+\end{enumerate}

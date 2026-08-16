@@ -1,0 +1,89 @@
+\appendix
+
+\chapter{Complete Supplementary Appendices}
+
+\section{Appendix A: Complete Feature Dictionary}
+\begin{table}[H]
+\centering
+\caption{Full Feature Specifications and Value Ranges}
+\label{tab:app_dict}
+\small
+\begin{tabular}{llll}
+\toprule
+\textbf{Feature Name} & \textbf{Data Type} & \textbf{Range / Units} & \textbf{Clinical Role} \\
+\midrule
+\texttt{age} & Integer & $18 - 100$ years & Demographic Risk Factor \\
+\texttt{sex} & Categorical & Male / Female & Biological Sex \\
+\texttt{resting\_bp\_systolic} & Integer & $80 - 220$ mmHg & Hemodynamic Vital \\
+\texttt{resting\_bp\_diastolic} & Integer & $50 - 140$ mmHg & Hemodynamic Vital \\
+\texttt{cholesterol\_total} & Integer & $100 - 400$ mg/dL & Lipid Panel \\
+\texttt{hdl} & Integer & $15 - 120$ mg/dL & Protective Lipid \\
+\texttt{ldl} & Integer & $30 - 250$ mg/dL & Atherogenic Lipid \\
+\texttt{triglycerides} & Integer & $30 - 500$ mg/dL & Lipid Biomarker \\
+\texttt{fasting\_blood\_sugar} & Integer & $60 - 250$ mg/dL & Glycemic Control \\
+\texttt{hba1c} & Float & $4.0 - 14.0\%$ & Long-term Glycemia \\
+\texttt{bmi} & Float & $14.0 - 50.0$ kg/m$^2$ & Adiposity Metric \\
+\texttt{max\_heart\_rate\_achieved} & Integer & $60 - 220$ bpm & Chronotropic Response \\
+\texttt{chest\_pain\_type} & Categorical & $4$ categories & Clinical Symptom \\
+\texttt{exercise\_induced\_angina} & Boolean & $0 / 1$ & Ischemic Symptom \\
+\texttt{st\_depression} & Float & $0.0 - 7.0$ mm & Electrocardiogram \\
+\texttt{family\_history} & Boolean & $0 / 1$ & Genetic Susceptibility \\
+\texttt{smoker\_status} & Categorical & $3$ categories & Behavioral Factor \\
+\texttt{exercise\_minutes\_per\_week} & Integer & $0 - 600$ min & Physical Activity \\
+\texttt{stress\_score} & Integer & $0 - 100$ & Psychological Factor \\
+\texttt{has\_heart\_disease} & Integer & $0 / 1$ & Binary Target Class \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Appendix B: Hyperparameter Grid Search Spaces}
+\begin{verbatim}
+KNN_GRID = {
+    'classifier__n_neighbors': [3, 5, 7, 9, 11, 15],
+    'classifier__weights': ['uniform', 'distance'],
+    'classifier__metric': ['euclidean', 'manhattan']
+}
+
+DT_GRID = {
+    'classifier__criterion': ['gini', 'entropy'],
+    'classifier__max_depth': [3, 5, 7, 10, None],
+    'classifier__min_samples_leaf': [1, 2, 4, 8]
+}
+
+RF_GRID = {
+    'classifier__n_estimators': [50, 100, 200],
+    'classifier__max_depth': [5, 10, 15, None],
+    'classifier__max_features': ['sqrt', 'log2']
+}
+
+SVM_GRID = {
+    'classifier__C': [0.1, 1.0, 10.0],
+    'classifier__kernel': ['linear', 'rbf'],
+    'classifier__gamma': ['scale', 'auto']
+}
+\end{verbatim}
+
+\section{Appendix C: Unit Test Suite Results}
+All unit tests in \texttt{tests/} executed successfully:
+\begin{itemize}
+    \item \texttt{test\_data\_loading}: Verified $9,000$ rows, target column existence, and zero missing values.
+    \item \texttt{test\_preprocessing}: Verified \texttt{ColumnTransformer} output shape ($29$ columns) and non-nan outputs.
+    \item \texttt{test\_model\_training}: Verified model probability outputs $\in [0.0, 1.0]$ and non-zero cross-validation scores.
+    \item \texttt{test\_statistical\_tests}: Verified FDR-corrected $p$-values are valid probabilities $\in [0, 1]$.
+\end{itemize}
+
+\section{Appendix D: Reproduction Terminal Commands}
+\begin{verbatim}
+# 1. Environment Setup
+python3 -m venv venv && source venv/bin/activate
+pip install -r requirements.txt
+
+# 2. Execution Pipeline
+python scripts/download_data.py
+python scripts/train_pipeline.py
+python scripts/generate_report_assets.py
+
+# 3. Web App & Report
+streamlit run src/app.py
+cd docs && pdflatex Rapport_MiniProject.tex
+\end{verbatim}

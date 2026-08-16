@@ -1,0 +1,83 @@
+\chapter{Project Engineering \& Git Workflow}
+
+\section{Software Architecture \& Directory Structure}
+The repository follows a clean, modular pythonic software architecture adhering to separation of concerns:
+
+\begin{verbatim}
+dataminingproject/
++-- data/
+|   +-- raw/heart_disease_risk_2026.csv
+|   \-- processed/
+|       +-- X_train.csv, X_test.csv, y_train.csv, y_test.csv
+|       \-- model_comparison.csv
++-- src/
+|   +-- utils.py                # File paths & column constants
+|   +-- preprocessing.py          # ColumnTransformer & feature engineering
+|   +-- statistical_tests.py      # 6 Hypothesis tests & FDR corrections
+|   +-- feature_analysis.py       # Multi-perspective feature importances
+|   +-- models.py                 # ML training & GridSearchCV tuning
+|   +-- visualization.py          # Publication-quality figure generation
+|   +-- findings.py               # Empirical discovery synthesis
+|   \-- app.py                    # 9-Page Streamlit web dashboard
++-- scripts/
+|   +-- download_data.py          # Automated kagglehub downloader
+|   +-- train_pipeline.py         # End-to-end model training script
+|   \-- generate_report_assets.py # Master figure & JSON generator
++-- models/
+|   +-- best_model.joblib
+|   +-- preprocessing_pipeline.joblib
+|   \-- model_metadata.json
++-- results/
+|   +-- statistical_tests.json
+|   +-- feature_importances.json
+|   \-- key_findings.json
++-- docs/
+|   +-- Rapport_MiniProject.tex
+|   +-- Rapport_MiniProject.pdf
+|   \-- figures/
+\-- tests/                        # Pytest unit tests suite
+\end{verbatim}
+
+\section{Reproducibility Protocol}
+To reproduce the complete pipeline from scratch:
+\begin{enumerate}
+    \item Clone repository: \texttt{git clone https://github.com/hosniadilemp-a11y/DataMiningProjectExample.git}
+    \item Install dependencies: \texttt{pip install -r requirements.txt}
+    \item Download raw dataset: \texttt{python scripts/download\_data.py}
+    \item Execute training pipeline: \texttt{python scripts/train\_pipeline.py}
+    \item Generate report assets: \texttt{python scripts/generate\_report\_assets.py}
+    \item Launch Streamlit app: \texttt{streamlit run src/app.py}
+\end{enumerate}
+
+\section{Git Demonstration Workflow}
+\begin{tcolorbox}[colback=yellow!15!white,colframe=orange!80!black,title=\textbf{DEMONSTRATION GIT WORKFLOW NOTICE}]
+This reference repository was created using \textbf{ONE GitHub account} to demonstrate a multi-student Git feature-branch workflow. The student codes \texttt{AISD05}, \texttt{SIAD19}, and \texttt{RSD20} represent \textbf{SIMULATED CONTRIBUTORS}.
+\end{tcolorbox}
+
+The repository structure incorporates four dedicated Git branches:
+\begin{itemize}
+    \item \texttt{main}: Production-ready stable release branch.
+    \item \texttt{develop}: Integration branch for merging student feature branches.
+    \item \texttt{feature/AISD05-eda}: Branch for Student AISD05 (Data Audit, EDA, Hypotheses).
+    \item \texttt{feature/SIAD19-modeling}: Branch for Student SIAD19 (Preprocessing, ML Models).
+    \item \texttt{feature/RSD20-streamlit}: Branch for Student RSD20 (Streamlit UI, LaTeX Report).
+\end{itemize}
+
+\section{Student Responsibility Matrix}
+Table~\ref{tab:contrib_matrix} details the responsibility distribution across simulated student contributors.
+
+\begin{table}[H]
+\centering
+\caption{Simulated Student Contributor Responsibility Matrix}
+\label{tab:contrib_matrix}
+\small
+\begin{tabular}{lll}
+\toprule
+\textbf{Student Code} & \textbf{Primary Responsibilities} & \textbf{Git Feature Branch} \\
+\midrule
+AISD05 & Dataset acquisition, quality audit, EDA, hypothesis testing & \texttt{feature/AISD05-eda} \\
+SIAD19 & Preprocessing pipeline, ML modeling, tuning, evaluation & \texttt{feature/SIAD19-modeling} \\
+RSD20 & Streamlit web application, predictor UI, LaTeX report & \texttt{feature/RSD20-streamlit} \\
+\bottomrule
+\end{tabular}
+\end{table}

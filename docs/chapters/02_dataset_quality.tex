@@ -1,0 +1,71 @@
+\chapter{Dataset Acquisition \& Quality Audit}
+
+\section{Dataset Origin \& Acquisition}
+The dataset analyzed in this project is the official Kaggle dataset \texttt{uditjain13/heart\_disease\_risk\_2026} \cite{kaggle2026}. Data acquisition is fully automated and reproducible via Python's \texttt{kagglehub} library:
+\begin{verbatim}
+import kagglehub
+path = kagglehub.dataset_download("uditjain13/heart-disease-risk-2026")
+print("Dataset file location:", path)
+\end{verbatim}
+
+\section{Dataset Structure \& Schema}
+The raw dataset comprises exactly $9,000$ patient records ($N=9,000$) and $27$ attributes ($1$ identifier attribute \texttt{patient\_id}, $25$ clinical and behavioral predictor features, and $1$ binary target variable \texttt{has\_heart\_disease}).
+
+\begin{table}[H]
+\centering
+\caption{Complete Data Dictionary for Heart Disease Risk Dataset ($N=9,000$)}
+\label{tab:data_dictionary}
+\small
+\begin{tabular}{lllll}
+\toprule
+\textbf{Feature Name} & \textbf{Data Type} & \textbf{Domain Category} & \textbf{Role} & \textbf{Description / Range} \\
+\midrule
+\texttt{patient\_id} & String & Identifier & Drop & Unique anonymized patient ID \\
+\texttt{age} & Integer & Demographic & Predictor & Patient age in years ($18 - 100$) \\
+\texttt{sex} & Categorical & Demographic & Predictor & Male / Female \\
+\texttt{resting\_bp\_systolic} & Integer & Hemodynamic & Predictor & Systolic blood pressure ($80 - 220$ mmHg) \\
+\texttt{resting\_bp\_diastolic} & Integer & Hemodynamic & Predictor & Diastolic blood pressure ($50 - 140$ mmHg) \\
+\texttt{cholesterol\_total} & Integer & Blood Chemistry & Predictor & Total serum cholesterol ($100 - 400$ mg/dL) \\
+\texttt{hdl} & Integer & Blood Chemistry & Predictor & High-density lipoprotein ($15 - 120$ mg/dL) \\
+\texttt{ldl} & Integer & Blood Chemistry & Predictor & Low-density lipoprotein ($30 - 250$ mg/dL) \\
+\texttt{triglycerides} & Integer & Blood Chemistry & Predictor & Serum triglycerides ($30 - 500$ mg/dL) \\
+\texttt{fasting\_blood\_sugar} & Integer & Blood Chemistry & Predictor & Fasting blood glucose ($60 - 250$ mg/dL) \\
+\texttt{hba1c} & Float & Blood Chemistry & Predictor & Glycated hemoglobin percentage ($4.0 - 14.0\%$) \\
+\texttt{bmi} & Float & Anthropometric & Predictor & Body Mass Index ($14.0 - 50.0$ kg/m$^2$) \\
+\texttt{resting\_heart\_rate} & Integer & Cardiac Vital & Predictor & Resting HR ($40 - 130$ bpm) \\
+\texttt{max\_heart\_rate\_achieved} & Integer & Exercise Test & Predictor & Peak exercise HR ($60 - 220$ bpm) \\
+\texttt{chest\_pain\_type} & Categorical & Clinical Symptom & Predictor & Asymptomatic / Non-Anginal / Typical / Atypical \\
+\texttt{exercise\_induced\_angina} & Boolean & Exercise Test & Predictor & Angina provoked by exercise ($0/1$) \\
+\texttt{st\_depression} & Float & Electrocardiogram & Predictor & Exercise ST depression ($0.0 - 7.0$ mm) \\
+\texttt{family\_history} & Boolean & Genetic & Predictor & Family history of early CVD ($0/1$) \\
+\texttt{smoker\_status} & Categorical & Lifestyle & Predictor & Never / Former / Current \\
+\texttt{alcohol\_units\_per\_week} & Float & Lifestyle & Predictor & Weekly alcohol consumption ($0.0 - 60.0$) \\
+\texttt{exercise\_minutes\_per\_week} & Integer & Lifestyle & Predictor & Weekly physical activity ($0 - 600$ min) \\
+\texttt{sleep\_hours} & Float & Lifestyle & Predictor & Daily sleep duration ($3.0 - 12.0$ hrs) \\
+\texttt{stress\_score} & Integer & Psychological & Predictor & Perceived stress index ($0 - 100$) \\
+\texttt{wearable\_owner} & Boolean & Digital Health & Predictor & Smartwatch / activity tracker ownership ($0/1$) \\
+\texttt{daily\_steps} & Integer & Behavioral & Predictor & Mean daily step count ($500 - 25,000$) \\
+\texttt{diet\_quality\_score} & Integer & Behavioral & Predictor & Dietary quality score ($0 - 100$) \\
+\texttt{has\_heart\_disease} & Integer & Clinical Target & \textbf{Target} & Binary indicator ($0 = \text{No}, 1 = \text{Yes}$) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Data Quality Assessment}
+
+\subsection{Missing Value Audit}
+Systematic inspection of all $9,000$ rows across 27 columns confirmed $0$ missing values ($0.0\%$). No imputation operations were required on the raw attributes.
+
+\subsection{Duplicate Record Audit}
+Exact duplicate verification across all feature vectors confirmed $0$ duplicate records ($0.0\%$). All $9,000$ patient instances represent unique observations.
+
+\subsection{Outlier Inspection}
+Continuous physiological variables were inspected via interquartile range (IQR) boxplot analysis ($Q_1 - 1.5\times\text{IQR}, Q_3 + 1.5\times\text{IQR}$). Physiological extremes (such as total cholesterol $>350$ mg/dL or ST depression $>4.0$ mm) reflect genuine clinical severity in diseased patients rather than measurement artifacts. Consequently, outliers were preserved to maintain diagnostic fidelity.
+
+\subsection{Target Class Distribution \& Imbalance Audit}
+The binary target variable \texttt{has\_heart\_disease} exhibits moderate class imbalance:
+\begin{itemize}
+    \item \textbf{Negative Class ($0 = \text{No Heart Disease}):} $6,273$ patients ($69.7\%$).
+    \item \textbf{Positive Class ($1 = \text{Heart Disease}):} $2,727$ patients ($30.3\%$).
+\end{itemize}
+The class imbalance ratio is $2.3:1$. Because raw accuracy can be deceptively optimistic under class imbalance (a naive Zero-R model predicting majority class achieves $69.72\%$ accuracy), evaluation in subsequent chapters focuses on Weighted F1-score, Recall (Sensitivity), and ROC-AUC.

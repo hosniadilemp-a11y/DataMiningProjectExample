@@ -1,0 +1,17 @@
+\chapter{Conclusion}
+
+\section{Summary of Achievements}
+This expanded Data Mining research study successfully executed an end-to-end investigation for heart disease risk classification on the official Kaggle dataset \texttt{uditjain13/heart-disease-risk-2026} ($N=9,000$). 
+
+Key technical and scientific achievements include:
+\begin{enumerate}
+    \item \textbf{Audited Data Quality:} Confirmed zero missing values and zero duplicate records across 9,000 patient instances.
+    \item \textbf{Leakage-Free Preprocessing:} Constructed scikit-learn \texttt{ColumnTransformer} pipelines encapsulating scaling, One-Hot encoding, and domain feature engineering.
+    \item \textbf{Rigorous Hypothesis Suite:} Executed 6 non-parametric statistical hypothesis tests ($\alpha = 0.05$) incorporating Benjamini-Hochberg FDR corrections and effect size metrics.
+    \item \textbf{Multi-Model Supervised Benchmark:} Benchmark six classification algorithms using 5-Fold Stratified Cross-Validation. The Support Vector Machine (RBF kernel) achieved leading diagnostic performance with an Accuracy of $89.17\%$, Weighted F1-score of $0.8898$, and ROC-AUC of $0.9422$.
+    \item \textbf{Feature Importance Consensus:} Established Maximum Heart Rate Achieved, ST Segment Depression, Age, and LDL Cholesterol as the primary clinical risk drivers.
+    \item \textbf{Interactive Deployment:} Developed a 9-page Streamlit web dashboard featuring a 7-tier clinical risk stratification framework.
+\end{enumerate}
+
+\section{Closing Remarks}
+By combining data quality auditing, exploratory visualization, non-parametric statistical hypothesis testing, machine learning benchmarking, and interactive deployment, this project demonstrates a complete, scientifically rigorous Data Mining study suitable for academic research and clinical decision support.

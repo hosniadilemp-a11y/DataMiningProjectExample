@@ -1,0 +1,81 @@
+\chapter{Machine Learning Benchmark \& Methodology}
+
+\section{Experimental Protocol \& Train/Test Split}
+The machine learning experimental protocol uses a stratified $80\% / 20\%$ split on the $9,000$ patient dataset:
+\begin{itemize}
+    \item \textbf{Training Set ($N_{train} = 7,200$ patients):} Used for hyperparameter tuning and model training.
+    \item \textbf{Test Set ($N_{test} = 1,800$ patients):} Hold-out test set evaluated strictly once for final reporting.
+\end{itemize}
+
+To optimize hyperparameters while avoiding over-optimistic evaluation, 5-Fold Stratified Cross-Validation is executed on the training set.
+
+\section{Supervised Classification Algorithms}
+
+\subsection{1. Zero-R Baseline Classifier}
+Serves as the uninformative benchmark. Always predicts the majority class ($y = 0$).
+\begin{itemize}
+    \item \textbf{Purpose:} Establishes minimum baseline accuracy ($69.72\%$) and zero recall ($0.0\%$).
+\end{itemize}
+
+\subsection{2. K-Nearest Neighbors (KNN)}
+Non-parametric instance-based learning classifying instances via distance-weighted majority voting:
+\begin{equation}
+d(\mathbf{x}_i, \mathbf{x}_j) = \sqrt{\sum_{k=1}^d (x_{ik} - x_{jk})^2}
+\end{equation}
+
+\subsection{3. Decision Tree Classifier}
+Constructs a hierarchical binary decision tree optimizing Information Gain / Entropy:
+\begin{equation}
+H(S) = -\sum_{c \in \{0,1\}} p_c \log_2(p_c)
+\end{equation}
+
+\subsection{4. Random Forest Classifier}
+An ensemble of $B$ independent decision trees trained via bootstrap aggregation (bagging) and random feature sub-sampling ($\sqrt{d}$) to reduce variance \cite{breiman2001random}:
+\begin{equation}
+\hat{f}_{rf}(\mathbf{x}) = \frac{1}{B} \sum_{b=1}^B T_b(\mathbf{x})
+\end{equation}
+
+\subsection{5. Gaussian Naive Bayes}
+Probabilistic classifier applying Bayes' Theorem under conditional feature independence assumptions:
+\begin{equation}
+P(Y = c \mid \mathbf{x}) \propto P(Y = c) \prod_{j=1}^d P(x_j \mid Y = c)
+\end{equation}
+
+\subsection{6. Support Vector Machine (SVC)}
+Maximizes the geometric margin separating hyperplanes in high-dimensional Hilbert space via a Radial Basis Function (RBF) kernel \cite{cortes1995support}:
+\begin{equation}
+K(\mathbf{x}_i, \mathbf{x}_j) = \exp\left(-\gamma \|\mathbf{x}_i - \mathbf{x}_j\|^2\right)
+\end{equation}
+
+\section{Hyperparameter Optimization via 5-Fold GridSearch}
+Table~\ref{tab:hyperparams} documents hyperparameter search grids and optimal selections.
+
+\begin{table}[H]
+\centering
+\caption{Hyperparameter Search Grids \& Selected Configurations}
+\label{tab:hyperparams}
+\small
+\begin{tabular}{lll}
+\toprule
+\textbf{Model} & \textbf{Search Grid} & \textbf{Optimal Selection} \\
+\midrule
+Zero-R & Strategy: [most\_frequent] & Strategy = 'most\_frequent' \\
+KNN & $n\_neighbors \in [3, 5, 7, 9, 11, 15]$, weights: ['uniform', 'distance'] & $k = 11$, metric = 'euclidean', weights = 'uniform' \\
+Decision Tree & criterion: ['gini', 'entropy'], max\_depth: $[3, 5, 7, 10, \text{None}]$ & criterion = 'entropy', max\_depth = 7, min\_samples\_leaf = 4 \\
+Random Forest & n\_estimators: $[50, 100, 200]$, max\_depth: $[5, 10, 15]$ & n\_estimators = 100, max\_depth = 10, max\_features = 'sqrt' \\
+Naive Bayes & var\_smoothing: $[1e-9, 1e-8, 1e-7]$ & var\_smoothing = $1\text{e-}9$ \\
+\textbf{SVM (SVC)} & $C \in [0.1, 1.0, 10.0]$, kernel: ['linear', 'rbf'], gamma: ['scale'] & kernel = 'rbf', $C = 1.0$, gamma = 'scale', probability = True \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Evaluation Metrics Framework}
+Models are evaluated across seven formal metrics:
+\begin{align}
+\text{Accuracy} &= \frac{TP + TN}{TP + TN + FP + FN} \\
+\text{Precision} &= \frac{TP}{TP + FP} \\
+\text{Recall (Sensitivity)} &= \frac{TP}{TP + FN} \\
+\text{Specificity} &= \frac{TN}{TN + FP} \\
+\text{Weighted F1-Score} &= 2 \cdot \frac{\text{Precision} \cdot \text{Recall}}{\text{Precision} + \text{Recall}} \quad (\text{class weighted})
+\end{align}
+Additionally, Area Under the ROC Curve (ROC-AUC) quantifies probability ranking quality across all thresholds.
