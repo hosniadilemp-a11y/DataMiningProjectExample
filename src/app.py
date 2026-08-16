@@ -137,7 +137,11 @@ RESULTS_DIR = PROJECT_ROOT / "results"
 def load_raw():
     if DATA_RAW_PATH.exists():
         return pd.read_csv(DATA_RAW_PATH)
-    return None
+    try:
+        from scripts.download_data import download_kaggle_dataset
+        return download_kaggle_dataset()
+    except Exception:
+        return None
 
 @st.cache_data
 def load_json_artifact(path: Path):
@@ -153,6 +157,13 @@ def load_ml_artifacts():
     meta_path = MODELS_DIR / "model_metadata.json"
     comp_path = DATA_PROCESSED_DIR / "model_comparison.csv"
     
+    if not best_model_path.exists() or not pipeline_path.exists():
+        try:
+            from scripts.train_pipeline import run_pipeline
+            run_pipeline()
+        except Exception:
+            pass
+            
     model = joblib.load(best_model_path) if best_model_path.exists() else None
     pipeline = joblib.load(pipeline_path) if pipeline_path.exists() else None
     metadata = load_json_artifact(meta_path) if meta_path.exists() else {}
@@ -377,10 +388,7 @@ elif page == "3. EDA Dashboard":
 # ==========================================
 elif page == "4. Statistical Analysis Suite":
     st.title("🧪 Statistical Hypothesis Testing Suite")
-    st.markdown("""
-    Rigorous statistical hypothesis tests conducted with significance threshold **α = 0.05**.
-    Includes Benjamini-Hochberg False Discovery Rate (FDR) multiple testing corrections and practical effect sizes.
-    """)
+    st.markdown("Rigorous statistical hypothesis tests conducted with significance threshold **α = 0.05**. Includes Benjamini-Hochberg False Discovery Rate (FDR) multiple testing corrections and practical effect sizes.")
     
     if stats_data:
         for h in stats_data:

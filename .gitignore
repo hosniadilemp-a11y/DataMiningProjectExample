@@ -18,22 +18,18 @@ lib/
 lib64/
 parts/
 sdist/
-var/
 wheels/
 *.egg-info/
 .installed.cfg
 *.egg
 
-# Data files (keep raw dataset in git if small or download via script)
-*.csv
-*.parquet
-*.xlsx
-!data/raw/.gitkeep
-!data/processed/.gitkeep
+# Data files (keep project datasets tracked)
+!data/raw/heart_disease_risk_2026.csv
+!data/processed/*.csv
 
-# Models & Joblib (keep small metadata, ignore large binaries if needed)
-models/*.joblib
-!models/.gitkeep
+# Models & Joblib (track trained models for deployment)
+!models/*.joblib
+!models/*.json
 
 # Jupyter Notebook checkpoints
 .ipynb_checkpoints
