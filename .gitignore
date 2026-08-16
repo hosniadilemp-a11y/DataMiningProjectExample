@@ -40,7 +40,10 @@ wheels/
 .idea/
 *.swp
 
-# LaTeX auxiliary files
+# LaTeX source and auxiliary files
+*.tex
+docs/*.tex
+docs/chapters/*.tex
 docs/*.aux
 docs/*.log
 docs/*.out
