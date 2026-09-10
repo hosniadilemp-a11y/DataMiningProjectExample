@@ -29,6 +29,7 @@ import joblib
 import matplotlib.pyplot as plt
 import seaborn as sns
 import json
+import streamlit.components.v1 as components
 
 # Pre-import project modules so unpickler can locate custom symbols
 try:
@@ -243,7 +244,8 @@ page = st.sidebar.radio(
         "6. Model Benchmark & Hyperparameters",
         "7. Heart Disease Risk Predictor",
         "8. Key Discoveries & Findings",
-        "9. About & Student Matrix"
+        "9. About & Student Matrix",
+        "10. Course Progression & SMOTE Benchmark",
     ]
 )
 
@@ -500,6 +502,8 @@ elif page == "5. Feature Importance Comparison":
 # ==========================================
 elif page == "6. Model Benchmark & Hyperparameters":
     st.title("🤖 Supervised Classification Model Benchmark & Hyperparameters")
+    
+    st.info("🎓 **Progression Pédagogique du Cours :** Découvrez également le benchmark complet (**Aléatoire ➔ Zero-R ➔ One-R ➔ Modèles Avancés ➔ Stacking avec comparaison SMOTE**) dans l'onglet **'10. Course Progression & SMOTE Benchmark'** du menu latéral.")
     
     if comparison_df is not None:
         st.subheader("1. Supervised Classifier Comparison (Test Set, N = 1,800)")
@@ -761,3 +765,85 @@ elif page == "9. About & Student Matrix":
     - **Web Framework:** `streamlit`
     - **Report Generation:** LaTeX (`pdflatex`)
     """)
+
+# ==========================================
+# PAGE 10 — COURSE PROGRESSION & SMOTE BENCHMARK
+# ==========================================
+elif page == "10. Course Progression & SMOTE Benchmark":
+    st.title("🎓 Course Classification Progression & Balancing Benchmark")
+    st.markdown("**Pedagogical hierarchy: Aléatoire ➔ Zero-R ➔ One-R ➔ Modèles Avancés ➔ Stacking avec 5-Fold CV ± Std**")
+    
+    st.markdown("""
+    <div style="background: rgba(239, 68, 68, 0.08); border-left: 4px solid #ef4444; padding: 14px 18px; border-radius: 6px; margin-bottom: 20px;">
+        <strong>Hiérarchie Pédagogique du Cours de Data Mining :</strong><br>
+        <code>🎲 Aléatoire (Uniforme) ➔ 🎯 Zero-R (Majoritaire) ➔ ⚡ One-R (1 Règle) ➔ 🚀 Modèles Avancés (DT, RF, Bayi, SVM, KNN, AdaBoost, XGBoost, Stacking)</code>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # Summary KPIs
+    kpi1, kpi2, kpi3, kpi4 = st.columns(4)
+    with kpi1:
+        st.markdown('<div class="kpi-card"><div class="kpi-title">ÉCHANTILLONS DÉMO</div><div class="kpi-value">500</div></div>', unsafe_allow_html=True)
+    with kpi2:
+        st.markdown('<div class="kpi-card"><div class="kpi-title">ZERO-R (SEUIL PLANCHER)</div><div class="kpi-value" style="color: #fbbf24;">69.60%</div></div>', unsafe_allow_html=True)
+    with kpi3:
+        st.markdown('<div class="kpi-card"><div class="kpi-title">MEILLEUR ROC-AUC (STACKING)</div><div class="kpi-value" style="color: #38bdf8;">0.9365</div></div>', unsafe_allow_html=True)
+    with kpi4:
+        st.markdown('<div class="kpi-card"><div class="kpi-title">RAPPEL MAX (SMOTE / SVM)</div><div class="kpi-value" style="color: #34d399;">82.9%</div></div>', unsafe_allow_html=True)
+        
+    st.markdown("---")
+    
+    # 1. Tabular View
+    st.subheader("1. Tableau Comparatif Multi-Métriques (5-Fold Stratified Cross-Validation)")
+    csv_candidates = [
+        PROJECT_ROOT / "reports" / "heart_attack_report.csv",
+        PROJECT_ROOT / "data" / "processed" / "heart_attack_report.csv",
+        Path("/home/adel/Documents/03_Teaching_and_Courses/Course_Data_Mining/05_Portal_and_Workspace/heart_attack_report.csv"),
+    ]
+    csv_path = next((p for p in csv_candidates if p.exists()), None)
+    
+    if csv_path:
+        df_bench = pd.read_csv(csv_path)
+        scenario_choice = st.radio(
+            "Sélectionnez le scénario de données :",
+            ["Données Brutes (Non Équilibrées)", "Données Équilibrées (SMOTE Fold-Wise)"],
+            horizontal=True
+        )
+        selected_scen = "unbalanced" if "Brutes" in scenario_choice else "balanced"
+        df_filtered = df_bench[df_bench["Scenario"] == selected_scen].copy()
+        
+        display_df = pd.DataFrame({
+            "Algorithme": df_filtered["Model"],
+            "Palier / Type": df_filtered["Type"],
+            "Accuracy": [f"{m:.4f} ± {s:.4f}" for m, s in zip(df_filtered["Accuracy_Mean"], df_filtered["Accuracy_Std"])],
+            "Précision": [f"{m:.4f} ± {s:.4f}" for m, s in zip(df_filtered["Precision_Mean"], df_filtered["Precision_Std"])],
+            "Rappel (Sensibilité)": [f"{m:.4f} ± {s:.4f}" for m, s in zip(df_filtered["Recall_Mean"], df_filtered["Recall_Std"])],
+            "F1-Score": [f"{m:.4f} ± {s:.4f}" for m, s in zip(df_filtered["F1_Mean"], df_filtered["F1_Std"])],
+            "F1 Macro": [f"{m:.4f} ± {s:.4f}" for m, s in zip(df_filtered["F1_Macro_Mean"], df_filtered["F1_Macro_Std"])],
+            "ROC-AUC": [f"{m:.4f} ± {s:.4f}" for m, s in zip(df_filtered["ROC_AUC_Mean"], df_filtered["ROC_AUC_Std"])],
+            "Avg Precision (AP)": [f"{m:.4f} ± {s:.4f}" for m, s in zip(df_filtered["Average_Precision_Mean"], df_filtered["Average_Precision_Std"])],
+            "Temps (s)": [f"{t:.2f}s" for t in df_filtered["Fit_Time_Seconds"]]
+        })
+        st.dataframe(display_df, width="stretch")
+    else:
+        st.info("Fichier CSV de résultats non trouvé.")
+
+    st.markdown("---")
+    
+    # 2. Embedded Interactive HTML Application
+    st.subheader("2. Dashboard Interactif Haute Fidélité (Courbes ROC, PR, Matrices & Chart.js)")
+    st.caption("Application complète embarquée avec graphiques dynamiques, matrices de confusion cliniques et sélecteur de scénario.")
+    
+    html_candidates = [
+        PROJECT_ROOT / "reports" / "heart_attack_report.html",
+        Path("/home/adel/Documents/03_Teaching_and_Courses/Course_Data_Mining/05_Portal_and_Workspace/heart_attack_report.html"),
+    ]
+    html_path = next((p for p in html_candidates if p.exists()), None)
+    
+    if html_path:
+        with open(html_path, "r", encoding="utf-8") as f:
+            html_content = f.read()
+        components.html(html_content, height=1050, scrolling=True)
+    else:
+        st.warning("Rapport HTML non trouvé.")
+

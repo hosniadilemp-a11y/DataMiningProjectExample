@@ -1,0 +1,1320 @@
+<!DOCTYPE html>
+<html lang="fr" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Heart Attack Classification Benchmark & Data Mining Hierarchy</title>
+  <meta name="description" content="Pipeline de préparation de données, équilibrage SMOTE, et benchmark supervisé multi-modèles (Aléatoire -> Zero-R -> One-R -> Modèles Avancés) avec validation croisée 5-Fold.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+    :root {
+      --bg-base: #0b0f19;
+      --bg-surface: #111827;
+      --bg-surface-elevated: #1e293b;
+      --bg-card: rgba(255, 255, 255, 0.03);
+      --border-subtle: rgba(255, 255, 255, 0.08);
+      --border-accent: rgba(239, 68, 68, 0.3);
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --text-dim: #64748b;
+      --primary: #ef4444;
+      --primary-glow: rgba(239, 68, 68, 0.25);
+      --secondary: #06b6d4;
+      --accent: #8b5cf6;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --radius-sm: 8px;
+      --radius-md: 14px;
+      --radius-lg: 20px;
+      --shadow-card: 0 10px 25px -5px rgba(0, 0, 0, 0.4), 0 8px 10px -6px rgba(0, 0, 0, 0.3);
+      --font-display: 'Outfit', sans-serif;
+      --font-body: 'Inter', sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    [data-theme="light"] {
+      --bg-base: #f8fafc;
+      --bg-surface: #ffffff;
+      --bg-surface-elevated: #f1f5f9;
+      --bg-card: rgba(0, 0, 0, 0.02);
+      --border-subtle: rgba(0, 0, 0, 0.08);
+      --border-accent: rgba(239, 68, 68, 0.4);
+      --text-main: #0f172a;
+      --text-muted: #475569;
+      --text-dim: #94a3b8;
+      --primary-glow: rgba(239, 68, 68, 0.15);
+      --shadow-card: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.03);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--font-body);
+      background-color: var(--bg-base);
+      color: var(--text-main);
+      line-height: 1.6;
+      padding-bottom: 60px;
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
+    /* Container */
+    .container {
+      max-width: 1380px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    /* Header */
+    header {
+      background: linear-gradient(180deg, rgba(239, 68, 68, 0.08) 0%, transparent 100%);
+      border-bottom: 1px solid var(--border-subtle);
+      padding: 36px 0 24px 0;
+      margin-bottom: 32px;
+    }
+
+    .header-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    .badge-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 14px;
+      border-radius: 9999px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      background: rgba(239, 68, 68, 0.12);
+      color: #f87171;
+      border: 1px solid rgba(239, 68, 68, 0.25);
+    }
+
+    .badge-pill svg {
+      animation: heartbeat 1.4s ease-in-out infinite;
+    }
+
+    @keyframes heartbeat {
+      0%, 100% { transform: scale(1); }
+      15% { transform: scale(1.25); }
+      30% { transform: scale(1); }
+      45% { transform: scale(1.18); }
+    }
+
+    h1 {
+      font-family: var(--font-display);
+      font-size: 2.3rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      background: linear-gradient(135deg, #ffffff 40%, #cbd5e1 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 8px;
+    }
+
+    [data-theme="light"] h1 {
+      background: linear-gradient(135deg, #0f172a 40%, #334155 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .subtitle {
+      color: var(--text-muted);
+      font-size: 1.05rem;
+      max-width: 900px;
+    }
+
+    .theme-toggle-btn {
+      background: var(--bg-surface-elevated);
+      color: var(--text-main);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-sm);
+      padding: 8px 14px;
+      font-size: 0.88rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+    }
+
+    .theme-toggle-btn:hover {
+      border-color: var(--primary);
+    }
+
+    /* Hierarchy Banner */
+    .hierarchy-strip {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 18px 24px;
+      margin-bottom: 30px;
+      box-shadow: var(--shadow-card);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .hierarchy-title {
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-dim);
+      font-weight: 700;
+    }
+
+    .hierarchy-flow {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+      font-size: 0.95rem;
+      font-weight: 600;
+    }
+
+    .flow-node {
+      padding: 6px 14px;
+      border-radius: var(--radius-sm);
+      background: var(--bg-surface-elevated);
+      border: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .flow-node.baseline {
+      border-color: rgba(148, 163, 184, 0.4);
+      color: #94a3b8;
+    }
+
+    .flow-node.zero-r {
+      border-color: rgba(245, 158, 11, 0.4);
+      background: rgba(245, 158, 11, 0.08);
+      color: #fbbf24;
+    }
+
+    .flow-node.one-r {
+      border-color: rgba(6, 182, 212, 0.4);
+      background: rgba(6, 182, 212, 0.08);
+      color: #38bdf8;
+    }
+
+    .flow-node.advanced {
+      border-color: rgba(139, 92, 246, 0.4);
+      background: rgba(139, 92, 246, 0.08);
+      color: #c084fc;
+    }
+
+    .flow-arrow {
+      color: var(--text-dim);
+      font-weight: bold;
+    }
+
+    /* KPI Cards */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 18px;
+      margin-bottom: 32px;
+    }
+
+    .kpi-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 20px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: var(--shadow-card);
+      transition: transform 0.2s ease, border-color 0.2s ease;
+    }
+
+    .kpi-card:hover {
+      transform: translateY(-3px);
+      border-color: rgba(255, 255, 255, 0.15);
+    }
+
+    .kpi-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--primary), var(--secondary));
+    }
+
+    .kpi-label {
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-dim);
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+
+    .kpi-value {
+      font-family: var(--font-display);
+      font-size: 1.85rem;
+      font-weight: 800;
+      color: var(--text-main);
+      display: flex;
+      align-items: baseline;
+      gap: 6px;
+    }
+
+    .kpi-subtext {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      margin-top: 6px;
+    }
+
+    /* Tabs Navigation */
+    .nav-tabs {
+      display: flex;
+      gap: 10px;
+      border-bottom: 1px solid var(--border-subtle);
+      margin-bottom: 28px;
+      overflow-x: auto;
+      padding-bottom: 4px;
+    }
+
+    .tab-btn {
+      padding: 10px 18px;
+      background: transparent;
+      color: var(--text-muted);
+      border: none;
+      border-bottom: 2px solid transparent;
+      font-weight: 600;
+      font-size: 0.92rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      white-space: nowrap;
+      transition: all 0.2s ease;
+    }
+
+    .tab-btn:hover {
+      color: var(--text-main);
+    }
+
+    .tab-btn.active {
+      color: var(--primary);
+      border-bottom-color: var(--primary);
+      background: rgba(239, 68, 68, 0.05);
+      border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+    }
+
+    .tab-panel {
+      display: none;
+      animation: fadeIn 0.3s ease forwards;
+    }
+
+    .tab-panel.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Control Switchers */
+    .switcher-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 14px;
+      background: var(--bg-surface-elevated);
+      padding: 12px 18px;
+      border-radius: var(--radius-md);
+      margin-bottom: 22px;
+      border: 1px solid var(--border-subtle);
+    }
+
+    .scenario-toggle {
+      display: inline-flex;
+      background: var(--bg-surface);
+      border-radius: var(--radius-sm);
+      padding: 4px;
+      border: 1px solid var(--border-subtle);
+    }
+
+    .scenario-btn {
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-size: 0.86rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .scenario-btn.active {
+      background: var(--primary);
+      color: #ffffff;
+      box-shadow: 0 2px 8px var(--primary-glow);
+    }
+
+    /* Card styling */
+    .card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 24px;
+      margin-bottom: 24px;
+      box-shadow: var(--shadow-card);
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 18px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .card-title {
+      font-family: var(--font-display);
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .card-desc {
+      color: var(--text-muted);
+      font-size: 0.88rem;
+      margin-top: 4px;
+    }
+
+    /* Grid layouts */
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(480px, 1fr));
+      gap: 24px;
+    }
+
+    /* Table */
+    .table-container {
+      overflow-x: auto;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-subtle);
+    }
+
+    table.benchmark-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.88rem;
+      text-align: left;
+    }
+
+    table.benchmark-table th {
+      background: var(--bg-surface-elevated);
+      color: var(--text-muted);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      font-size: 0.76rem;
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--border-subtle);
+      white-space: nowrap;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    table.benchmark-table th:hover {
+      color: var(--text-main);
+    }
+
+    table.benchmark-table td {
+      padding: 13px 16px;
+      border-bottom: 1px solid var(--border-subtle);
+      color: var(--text-main);
+      white-space: nowrap;
+    }
+
+    table.benchmark-table tr:hover td {
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    .score-cell {
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+    }
+
+    .score-std {
+      color: var(--text-dim);
+      font-size: 0.78rem;
+    }
+
+    .best-score {
+      color: var(--success);
+      font-weight: 700;
+      background: rgba(16, 185, 129, 0.08);
+      padding: 3px 6px;
+      border-radius: 4px;
+      border: 1px solid rgba(16, 185, 129, 0.2);
+    }
+
+    .baseline-score {
+      color: var(--warning);
+      font-style: italic;
+    }
+
+    .tier-badge {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+
+    .tier-baseline { background: rgba(148, 163, 184, 0.15); color: #cbd5e1; }
+    .tier-simple { background: rgba(6, 182, 212, 0.15); color: #38bdf8; }
+    .tier-linear { background: rgba(59, 130, 246, 0.15); color: #60a5fa; }
+    .tier-ensemble { background: rgba(139, 92, 246, 0.15); color: #c084fc; }
+    .tier-stacking { background: rgba(236, 72, 153, 0.15); color: #f472b6; }
+
+    /* Educational Alert Boxes */
+    .edu-alert {
+      border-left: 4px solid var(--primary);
+      background: rgba(239, 68, 68, 0.06);
+      padding: 16px 20px;
+      border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+      margin-bottom: 22px;
+      font-size: 0.9rem;
+    }
+
+    .edu-alert.warning {
+      border-left-color: var(--warning);
+      background: rgba(245, 158, 11, 0.06);
+    }
+
+    .edu-alert.info {
+      border-left-color: var(--secondary);
+      background: rgba(6, 182, 212, 0.06);
+    }
+
+    .edu-alert.success {
+      border-left-color: var(--success);
+      background: rgba(16, 185, 129, 0.06);
+    }
+
+    .edu-alert-title {
+      font-weight: 700;
+      margin-bottom: 4px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* Confusion matrix styling */
+    .cm-wrapper {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    .cm-card {
+      background: var(--bg-surface-elevated);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-sm);
+      padding: 16px;
+      flex: 1;
+      min-width: 280px;
+    }
+
+    .cm-grid {
+      display: grid;
+      grid-template-columns: auto 1fr 1fr;
+      gap: 6px;
+      margin-top: 12px;
+      font-size: 0.84rem;
+      text-align: center;
+    }
+
+    .cm-header {
+      font-weight: 600;
+      color: var(--text-dim);
+      padding: 6px;
+    }
+
+    .cm-box {
+      padding: 14px 10px;
+      border-radius: 6px;
+      font-family: var(--font-mono);
+      font-size: 1rem;
+      font-weight: 700;
+    }
+
+    .cm-tn { background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); }
+    .cm-tp { background: rgba(6, 182, 212, 0.15); color: #38bdf8; border: 1px solid rgba(6, 182, 212, 0.3); }
+    .cm-fp { background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3); }
+    .cm-fn { background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.4); }
+
+    /* Canvas container */
+    .chart-container {
+      position: relative;
+      height: 380px;
+      width: 100%;
+    }
+
+    /* Feature Importance Bars */
+    .fi-item {
+      margin-bottom: 12px;
+    }
+
+    .fi-label-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.84rem;
+      font-weight: 500;
+      margin-bottom: 4px;
+    }
+
+    .fi-bar-bg {
+      width: 100%;
+      height: 8px;
+      background: var(--bg-surface-elevated);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .fi-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--secondary), var(--primary));
+      border-radius: 4px;
+      transition: width 0.6s ease;
+    }
+
+    /* Footer */
+    footer {
+      margin-top: 50px;
+      border-top: 1px solid var(--border-subtle);
+      padding-top: 24px;
+      text-align: center;
+      color: var(--text-dim);
+      font-size: 0.85rem;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header>
+    <div class="container">
+      <div class="header-top">
+        <div class="badge-pill">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+          </svg>
+          Cardiology & Data Mining Benchmark
+        </div>
+        <button id="themeToggle" class="theme-toggle-btn" onclick="toggleTheme()">
+          🌓 Mode Clair / Sombre
+        </button>
+      </div>
+
+      <h1>Prédiction des Crises Cardiaques & Modélisation Supervisée</h1>
+      <p class="subtitle">
+        Pipeline complet de prétraitement, étude du déséquilibre (Brut vs SMOTE), progression hiérarchique du cours
+        (Aléatoire ➔ Zero-R ➔ One-R ➔ Modèles Avancés ➔ Méta-Ensemble Stacking) validée par <strong>5-Fold Stratified Cross-Validation</strong>.
+      </p>
+    </div>
+  </header>
+
+  <div class="container">
+
+    <!-- Hierarchy Visual Flow -->
+    <div class="hierarchy-strip">
+      <div class="hierarchy-title">Progression Pédagogique du Cours :</div>
+      <div class="hierarchy-flow">
+        <div class="flow-node baseline">🎲 Aléatoire (Uniforme)</div>
+        <div class="flow-arrow">➔</div>
+        <div class="flow-node zero-r">🎯 Zero-R (Classe Majoritaire)</div>
+        <div class="flow-arrow">➔</div>
+        <div class="flow-node one-r">⚡ One-R (1 Règle / Decision Stump)</div>
+        <div class="flow-arrow">➔</div>
+        <div class="flow-node advanced">🚀 Modèles Avancés (DT, RF, Bayi, SVM, KNN, Boosting, Stacking)</div>
+      </div>
+    </div>
+
+    <!-- KPI Summary Grid -->
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-label">Échantillons & Déséquilibre</div>
+        <div class="kpi-value">500 <span style="font-size: 1rem; color: var(--text-dim); font-weight: normal;">patients</span></div>
+        <div class="kpi-subtext">
+          69.6% Sains / 30.4% Malades (Ratio: 2.29:1)
+        </div>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-label">Seuil Plancher Zero-R (Accuracy)</div>
+        <div class="kpi-value" style="color: #fbbf24;">
+          69.60%
+        </div>
+        <div class="kpi-subtext">
+          Obtenu en prédisant toujours 0 (Rappel de la maladie = 0.0%)
+        </div>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-label">Meilleur Modèle (F1 Données Brutes)</div>
+        <div class="kpi-value" style="color: #38bdf8;">
+          0.778
+        </div>
+        <div class="kpi-subtext">
+          Naïve Bayes (Bayi) (ROC-AUC: 0.923)
+        </div>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-label">Meilleur Rappel (Équilibré SMOTE)</div>
+        <div class="kpi-value" style="color: #34d399;">
+          82.9%
+        </div>
+        <div class="kpi-subtext">
+          Naïve Bayes (Bayi) (Détection maximale des crises)
+        </div>
+      </div>
+    </div>
+
+    <!-- Global Scenario Switcher -->
+    <div class="switcher-bar">
+      <div style="font-weight: 600; font-size: 0.95rem; display: flex; align-items: center; gap: 8px;">
+        <span>Affichage actif du scénario :</span>
+      </div>
+      <div class="scenario-toggle">
+        <button id="btnUnbalanced" class="scenario-btn active" onclick="setScenario('unbalanced')">Données Brutes (Non Équilibrées)</button>
+        <button id="btnBalanced" class="scenario-btn" onclick="setScenario('balanced')">Données Équilibrées (SMOTE Fold-Wise)</button>
+      </div>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <div class="nav-tabs">
+      <button class="tab-btn active" onclick="switchTab('tab-comparison')">📊 Comparatif des Modèles & Graphiques</button>
+      <button class="tab-btn" onclick="switchTab('tab-table')">📋 Tableau Complet des Métriques (Mean ± Std)</button>
+      <button class="tab-btn" onclick="switchTab('tab-curves')">📈 Courbes ROC & Précision-Rappel (PR / AP)</button>
+      <button class="tab-btn" onclick="switchTab('tab-cm')">🔲 Matrices de Confusion & Diagnostic Médical</button>
+      <button class="tab-btn" onclick="switchTab('tab-features')">🔍 Importance des Variables Biomédicales</button>
+      <button class="tab-btn" onclick="switchTab('tab-course')">🎓 Enseignements & Concepts du Cours</button>
+    </div>
+
+    <!-- TAB 1: Comparison & Charts -->
+    <div id="tab-comparison" class="tab-panel active">
+      <div class="edu-alert info">
+        <div class="edu-alert-title">
+          <span>ℹ️</span> Analyse Comparative de la Hiérarchie des Modèles
+        </div>
+        Le graphique ci-dessous illustre l'évolution des performances depuis le tirage aléatoire et Zero-R jusqu'aux modèles avancés et au stacking.
+        Chaque barre représente la moyenne calculée sur 5 plis de validation croisée stratifiée, avec l'écart-type affiché dans l'infobulle.
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Exactitude (Accuracy) & F1-Score</div>
+              <div class="card-desc">Comparaison des modèles par rapport au seuil plancher Zero-R</div>
+            </div>
+          </div>
+          <div class="chart-container">
+            <canvas id="chartAccF1"></canvas>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Rappel (Recall) vs Précision (Precision)</div>
+              <div class="card-desc">Capacité à détecter tous les patients à risque sans fausse alerte excessive</div>
+            </div>
+          </div>
+          <div class="chart-container">
+            <canvas id="chartPrecRec"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">ROC-AUC & Average Precision (AP)</div>
+            <div class="card-desc">Robustesse du classement des probabilités et performance sous déséquilibre</div>
+          </div>
+        </div>
+        <div class="chart-container">
+          <canvas id="chartRocAp"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 2: Full Table -->
+    <div id="tab-table" class="tab-panel">
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Tableau Récapitulatif 5-Fold Cross-Validation</div>
+            <div class="card-desc">Toutes les métriques sont exprimées sous la forme <code>Moyenne ± Écart-Type (std)</code> sur les 5 plis.</div>
+          </div>
+        </div>
+
+        <div class="table-container">
+          <table class="benchmark-table" id="resultsTable">
+            <thead>
+              <tr>
+                <th onclick="sortTable(0)">Algorithme</th>
+                <th onclick="sortTable(1)">Palier / Type</th>
+                <th onclick="sortTable(2)">Accuracy</th>
+                <th onclick="sortTable(3)">Précision</th>
+                <th onclick="sortTable(4)">Rappel (Sensibilité)</th>
+                <th onclick="sortTable(5)">F1-Score</th>
+                <th onclick="sortTable(6)">F1 Macro</th>
+                <th onclick="sortTable(7)">ROC-AUC</th>
+                <th onclick="sortTable(8)">Avg Precision (AP)</th>
+                <th onclick="sortTable(9)">Temps (s)</th>
+              </tr>
+            </thead>
+            <tbody id="tableBody">
+              <!-- Dynamically populated via JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 3: ROC & PR Curves -->
+    <div id="tab-curves" class="tab-panel">
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Courbes ROC (Receiver Operating Characteristic)</div>
+              <div class="card-desc">Taux de Vrais Positifs (TPR) vs Taux de Faux Positifs (FPR)</div>
+            </div>
+          </div>
+          <div class="chart-container">
+            <canvas id="chartRocCurve"></canvas>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Courbes Précision-Rappel (PR Curves)</div>
+              <div class="card-desc">Particulièrement informative pour les classes positives minoritaires</div>
+            </div>
+          </div>
+          <div class="chart-container">
+            <canvas id="chartPrCurve"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 4: Confusion Matrices -->
+    <div id="tab-cm" class="tab-panel">
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Matrices de Confusion Cumulées (Somme des 5 Plis de Test)</div>
+            <div class="card-desc">Analyse critique des Faux Négatifs (patients cardiaques non diagnostiqués) vs Faux Positifs</div>
+          </div>
+        </div>
+
+        <div class="edu-alert warning">
+          <div class="edu-alert-title">⚠️ Le Dilemme Médical : Faux Négatif vs Faux Positif</div>
+          En cardiologie, un <strong>Faux Négatif</strong> (patient cardiaque renvoyé chez lui) peut avoir des conséquences vitales.
+          Observer comment l'application de <strong>SMOTE</strong> déplace la frontière de décision pour réduire massivement les Faux Négatifs au prix d'une légère hausse de Faux Positifs.
+        </div>
+
+        <div class="cm-wrapper" id="cmContainer">
+          <!-- Dynamically populated via JS -->
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 5: Feature Importances -->
+    <div id="tab-features" class="tab-panel">
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Facteurs de Risque Dominants (Random Forest)</div>
+              <div class="card-desc">Importance relative (Gini Impurity Decrease) des caractéristiques</div>
+            </div>
+          </div>
+          <div id="rfFeatureList"></div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Facteurs de Risque Dominants (XGBoost)</div>
+              <div class="card-desc">Poids des gradients dans l'ensemble séquentiel</div>
+            </div>
+          </div>
+          <div id="xgbFeatureList"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 6: Course Concepts -->
+    <div id="tab-course" class="tab-panel">
+      <div class="card">
+        <div class="card-title" style="margin-bottom: 16px;">🎓 Alignement avec le Cours de Data Mining & Classification</div>
+
+        <div class="edu-alert warning">
+          <div class="edu-alert-title">1. Le « Piège de l'Accuracy » et la Règle d'Or de Zero-R</div>
+          <p>
+            Le classifieur <strong>Zero-R</strong> prédit toujours la classe majoritaire sans regarder les variables explicatives $X$.
+            Sur notre jeu de données déséquilibré (2.3:1), Zero-R obtient environ <strong>69.60% d'Accuracy</strong>, mais avec un <strong>Rappel de 0%</strong> sur les patients malades !
+          </p>
+          <p style="margin-top: 6px;">
+            <em>Règle d'or du cours :</em> Tout modèle qui affiche 70% d'exactitude n'a rien appris de plus qu'une constante triviale. L'exactitude de Zero-R est le <strong>seuil plancher universel</strong>.
+          </p>
+        </div>
+
+        <div class="edu-alert info">
+          <div class="edu-alert-title">2. One-R (Decision Stump) : La puissance d'une seule règle</div>
+          <p>
+            One-R (Holte, 1993) sélectionne la meilleure variable explicative unique. On constate qu'avec une seule division univariée,
+            One-R dépasse déjà significativement le F1-score de Zero-R, fournissant une baseline interprétable essentielle pour juger du gain apporté par des arbres plus profonds ou des forêts.
+          </p>
+        </div>
+
+        <div class="edu-alert success">
+          <div class="edu-alert-title">3. Impact du Rééquilibrage SMOTE (Prévention de Fuite de Données)</div>
+          <p>
+            Appliqué <em>strictement à l'intérieur des plis d'entraînement</em>, le sur-échantillonnage synthétique (SMOTE) rééquilibre la sensibilité du gradient et des séparateurs.
+            Le Rappel sur la classe malade augmente spectaculairement (notamment pour KNN et SVM), optimisant le score F1-Macro.
+          </p>
+        </div>
+
+        <div class="edu-alert">
+          <div class="edu-alert-title">4. Supériorité du Méta-Apprentissage (Stacking) & des Ensembles</div>
+          <p>
+            Le modèle de <strong>Stacking</strong> combine les prédictions d'algorithmes aux biais inductifs distincts (arbres décorrélés pour RF, frontière à vaste marge pour SVM, votes de voisinage pour KNN, et descente de gradient de second ordre pour XGBoost) au moyen d'un méta-classifieur de régression logistique.
+            Cette synergie produit l'aire sous la courbe (ROC-AUC) la plus stable et régulière sur l'ensemble des 5 plis.
+          </p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <footer>
+    <div class="container">
+      Généré automatiquement par le pipeline de Classification Data Mining & Machine Learning • 5-Fold Stratified Cross-Validation • Scikit-Learn, Imbalanced-Learn & XGBoost
+    </div>
+  </footer>
+
+  <script>
+    // Embedded Data from Python
+    const RAW_DATA = {"unbalanced": {"Al\u00e9atoire (Uniform)": {"model_name": "Al\u00e9atoire (Uniform)", "tier": "1. Baseline Al\u00e9atoire", "type": "Dummy / Random", "description": "Tirage \u00e9quiprobable pur (1/K) sans aucun a priori.", "course_note": "Score plancher th\u00e9orique d'un classifieur sans information (50% pour binaire).", "fit_time": 0.08, "accuracy": {"mean": 0.476, "std": 0.0383, "str": "0.4760 \u00b1 0.0383"}, "precision": {"mean": 0.3036, "std": 0.0375, "str": "0.3036 \u00b1 0.0375"}, "recall": {"mean": 0.5585, "std": 0.0615, "str": "0.5585 \u00b1 0.0615"}, "f1_score": {"mean": 0.3933, "std": 0.0467, "str": "0.3933 \u00b1 0.0467"}, "precision_macro": {"mean": 0.4995, "std": 0.0384, "str": "0.4995 \u00b1 0.0384"}, "recall_macro": {"mean": 0.4991, "std": 0.0444, "str": "0.4991 \u00b1 0.0444"}, "f1_macro": {"mean": 0.4661, "std": 0.0395, "str": "0.4661 \u00b1 0.0395"}, "roc_auc": {"mean": 0.5, "std": 0.0, "str": "0.5000 \u00b1 0.0000"}, "ap": {"mean": 0.304, "std": 0.0049, "str": "0.3040 \u00b1 0.0049"}, "confusion_matrix": [[153, 195], [67, 85]], "roc_curve": {"fpr": [0.0, 1.0, 1.0], "tpr": [0.0, 1.0, 1.0], "auc": 0.5}, "pr_curve": {"recall": [1.0, 0.0], "precision": [0.304, 1.0], "ap": 0.304}, "feature_importances": null}, "Zero-R (Majoritaire)": {"model_name": "Zero-R (Majoritaire)", "tier": "2. Baseline Zero-R", "type": "Zero-Rule (Majority)", "description": "Pr\u00e9dit syst\u00e9matiquement la classe majoritaire de l'entra\u00eenement.", "course_note": "Seuil plancher universel d'Accuracy. Tout mod\u00e8le avec une accuracy < Zero-R est pire qu'inutile.", "fit_time": 0.07, "accuracy": {"mean": 0.696, "std": 0.0049, "str": "0.6960 \u00b1 0.0049"}, "precision": {"mean": 0.0, "std": 0.0, "str": "0.0000 \u00b1 0.0000"}, "recall": {"mean": 0.0, "std": 0.0, "str": "0.0000 \u00b1 0.0000"}, "f1_score": {"mean": 0.0, "std": 0.0, "str": "0.0000 \u00b1 0.0000"}, "precision_macro": {"mean": 0.348, "std": 0.0024, "str": "0.3480 \u00b1 0.0024"}, "recall_macro": {"mean": 0.5, "std": 0.0, "str": "0.5000 \u00b1 0.0000"}, "f1_macro": {"mean": 0.4104, "std": 0.0017, "str": "0.4104 \u00b1 0.0017"}, "roc_auc": {"mean": 0.5, "std": 0.0, "str": "0.5000 \u00b1 0.0000"}, "ap": {"mean": 0.304, "std": 0.0049, "str": "0.3040 \u00b1 0.0049"}, "confusion_matrix": [[348, 0], [152, 0]], "roc_curve": {"fpr": [0.0, 1.0, 1.0], "tpr": [0.0, 1.0, 1.0], "auc": 0.5}, "pr_curve": {"recall": [1.0, 0.0], "precision": [0.304, 1.0], "ap": 0.304}, "feature_importances": null}, "One-R (1 R\u00e8gle)": {"model_name": "One-R (1 R\u00e8gle)", "tier": "3. Baseline One-R", "type": "One-Rule (Decision Stump)", "description": "Classifieur bas\u00e9 sur un seul attribut explicatif (arbre de d\u00e9cision \u00e0 profondeur 1).", "course_note": "R\u00e8gle si-alors univari\u00e9e interpr\u00e9table. Atteint souvent 80-90% de la performance de mod\u00e8les complexes.", "fit_time": 0.08, "accuracy": {"mean": 0.824, "std": 0.0287, "str": "0.8240 \u00b1 0.0287"}, "precision": {"mean": 0.7253, "std": 0.0502, "str": "0.7253 \u00b1 0.0502"}, "recall": {"mean": 0.6847, "std": 0.0654, "str": "0.6847 \u00b1 0.0654"}, "f1_score": {"mean": 0.7026, "std": 0.0454, "str": "0.7026 \u00b1 0.0454"}, "precision_macro": {"mean": 0.7955, "std": 0.0333, "str": "0.7955 \u00b1 0.0333"}, "recall_macro": {"mean": 0.7848, "std": 0.0352, "str": "0.7848 \u00b1 0.0352"}, "f1_macro": {"mean": 0.7887, "std": 0.0327, "str": "0.7887 \u00b1 0.0327"}, "roc_auc": {"mean": 0.7848, "std": 0.0352, "str": "0.7848 \u00b1 0.0352"}, "ap": {"mean": 0.5934, "std": 0.0467, "str": "0.5934 \u00b1 0.0467"}, "confusion_matrix": [[308, 40], [48, 104]], "roc_curve": {"fpr": [0.0, 0.0259, 0.0575, 0.0805, 0.1149, 0.2931, 0.4655, 0.8333, 1.0, 1.0], "tpr": [0.0, 0.125, 0.2632, 0.4211, 0.6842, 0.7237, 0.8026, 0.9342, 1.0, 1.0], "auc": 0.7848}, "pr_curve": {"recall": [1.0, 0.9342, 0.8026, 0.7237, 0.6842, 0.4211, 0.2632, 0.125, 0.0], "precision": [0.304, 0.3287, 0.4296, 0.5189, 0.7222, 0.6957, 0.6667, 0.6786, 1.0], "ap": 0.5934}, "feature_importances": null}, "Arbre de D\u00e9cision (DT)": {"model_name": "Arbre de D\u00e9cision (DT)", "tier": "4. Mod\u00e8le Simple", "type": "Decision Tree", "description": "Arbre de classification hi\u00e9rarchique avec division par impuret\u00e9 de Gini.", "course_note": "Mod\u00e8le bo\u00eete blanche hautement interpr\u00e9table, sensible au surapprentissage si non \u00e9lagu\u00e9.", "fit_time": 0.08, "accuracy": {"mean": 0.794, "std": 0.0372, "str": "0.7940 \u00b1 0.0372"}, "precision": {"mean": 0.6618, "std": 0.0659, "str": "0.6618 \u00b1 0.0659"}, "recall": {"mean": 0.6772, "std": 0.0593, "str": "0.6772 \u00b1 0.0593"}, "f1_score": {"mean": 0.6673, "std": 0.0513, "str": "0.6673 \u00b1 0.0513"}, "precision_macro": {"mean": 0.7596, "std": 0.0407, "str": "0.7596 \u00b1 0.0407"}, "recall_macro": {"mean": 0.7609, "std": 0.0366, "str": "0.7609 \u00b1 0.0366"}, "f1_macro": {"mean": 0.7587, "std": 0.0392, "str": "0.7587 \u00b1 0.0392"}, "roc_auc": {"mean": 0.8176, "std": 0.0398, "str": "0.8176 \u00b1 0.0398"}, "ap": {"mean": 0.6444, "std": 0.0561, "str": "0.6444 \u00b1 0.0561"}, "confusion_matrix": [[294, 54], [49, 103]], "roc_curve": {"fpr": [0.0, 0.069, 0.0747, 0.0747, 0.0805, 0.0805, 0.0833, 0.092, 0.0948, 0.0977, 0.1092, 0.1149, 0.1178, 0.1264, 0.1322, 0.1437, 0.1494, 0.1552, 0.1609, 0.1782, 0.1839, 0.1897, 0.2126, 0.2241, 0.2299, 0.2356, 0.2443, 0.2586, 0.2644, 0.273, 0.2759, 0.2816, 0.2931, 0.3075, 0.4425, 0.5603, 0.6839, 1.0, 1.0], "tpr": [0.0, 0.4145, 0.4408, 0.4474, 0.4737, 0.4868, 0.4934, 0.5132, 0.5592, 0.5724, 0.5789, 0.5987, 0.6316, 0.6316, 0.6316, 0.6513, 0.6711, 0.6776, 0.6908, 0.7039, 0.7303, 0.7368, 0.7566, 0.7566, 0.7763, 0.7829, 0.7829, 0.8026, 0.8026, 0.8026, 0.8026, 0.8289, 0.8421, 0.8553, 0.875, 0.8947, 0.9013, 1.0, 1.0], "auc": 0.8176}, "pr_curve": {"recall": [1.0, 0.9013, 0.8947, 0.875, 0.8553, 0.8421, 0.8289, 0.8026, 0.8026, 0.8026, 0.8026, 0.7829, 0.7829, 0.7763, 0.7566, 0.7566, 0.7368, 0.7303, 0.7171, 0.7039, 0.6974, 0.6908, 0.6776, 0.6711, 0.6513, 0.6316, 0.6316, 0.6316, 0.5987, 0.5789, 0.5724, 0.5592, 0.5132, 0.4934, 0.4868, 0.4737, 0.4474, 0.4408, 0.4145, 0.0], "precision": [0.304, 0.3653, 0.4109, 0.4634, 0.5485, 0.5565, 0.5625, 0.5596, 0.5622, 0.5701, 0.5755, 0.5833, 0.592, 0.596, 0.5959, 0.6085, 0.6292, 0.6343, 0.6337, 0.6331, 0.6424, 0.6522, 0.6561, 0.6623, 0.6644, 0.6761, 0.6857, 0.7007, 0.6947, 0.6984, 0.719, 0.7203, 0.7091, 0.7212, 0.7255, 0.72, 0.7234, 0.7204, 0.7241, 1.0], "ap": 0.6444}, "feature_importances": null}, "Na\u00efve Bayes (Bayi)": {"model_name": "Na\u00efve Bayes (Bayi)", "tier": "4. Mod\u00e8le Simple", "type": "Probabilistic / Bayesian", "description": "Th\u00e9or\u00e8me de Bayes avec hypoth\u00e8se forte d'ind\u00e9pendance conditionnelle des attributs.", "course_note": "Rapide, robuste au bruit, performant m\u00eame avec de petits \u00e9chantillons.", "fit_time": 0.07, "accuracy": {"mean": 0.858, "std": 0.0402, "str": "0.8580 \u00b1 0.0402"}, "precision": {"mean": 0.745, "std": 0.068, "str": "0.7450 \u00b1 0.0680"}, "recall": {"mean": 0.8159, "std": 0.0526, "str": "0.8159 \u00b1 0.0526"}, "f1_score": {"mean": 0.7783, "std": 0.0589, "str": "0.7783 \u00b1 0.0589"}, "precision_macro": {"mean": 0.8304, "std": 0.0452, "str": "0.8304 \u00b1 0.0452"}, "recall_macro": {"mean": 0.8462, "std": 0.0428, "str": "0.8462 \u00b1 0.0428"}, "f1_macro": {"mean": 0.8369, "std": 0.0446, "str": "0.8369 \u00b1 0.0446"}, "roc_auc": {"mean": 0.923, "std": 0.0352, "str": "0.9230 \u00b1 0.0352"}, "ap": {"mean": 0.8614, "std": 0.0579, "str": "0.8614 \u00b1 0.0579"}, "confusion_matrix": [[305, 43], [28, 124]], "roc_curve": {"fpr": [0.0, 0.0, 0.0, 0.0029, 0.0029, 0.0057, 0.0057, 0.0086, 0.0086, 0.0172, 0.0172, 0.0201, 0.0201, 0.023, 0.023, 0.0259, 0.0259, 0.0287, 0.0287, 0.0345, 0.0345, 0.0374, 0.0374, 0.0402, 0.0402, 0.046, 0.046, 0.0489, 0.0489, 0.0517, 0.0517, 0.0546, 0.0546, 0.0575, 0.0575, 0.0603, 0.0603, 0.0632, 0.0632, 0.0747, 0.0747, 0.0776, 0.0776, 0.0833, 0.0833, 0.0891, 0.0891, 0.0948, 0.0948, 0.0977, 0.0977, 0.1092, 0.1092, 0.1207, 0.1207, 0.1236, 0.1236, 0.1264, 0.1264, 0.1322, 0.1322, 0.1552, 0.1552, 0.1954, 0.1954, 0.1983, 0.1983, 0.2069, 0.2069, 0.2213, 0.2213, 0.2299, 0.2299, 0.2385, 0.2385, 0.2557, 0.2557, 0.273, 0.273, 0.2902, 0.2902, 0.3103, 0.3103, 0.3276, 0.3276, 0.3592, 0.3592, 0.3621, 0.3621, 0.4799, 0.4799, 0.5086, 0.5086, 0.5259, 0.5259, 0.6236, 0.6236, 1.0, 1.0], "tpr": [0.0, 0.0066, 0.2105, 0.2105, 0.3092, 0.3092, 0.3684, 0.3684, 0.3882, 0.3882, 0.4079, 0.4079, 0.4211, 0.4211, 0.4276, 0.4276, 0.4803, 0.4803, 0.4934, 0.4934, 0.5263, 0.5263, 0.5329, 0.5329, 0.5461, 0.5461, 0.5724, 0.5724, 0.5789, 0.5789, 0.6316, 0.6316, 0.6513, 0.6513, 0.7039, 0.7039, 0.7171, 0.7171, 0.7237, 0.7237, 0.7368, 0.7368, 0.7434, 0.7434, 0.7566, 0.7566, 0.7632, 0.7632, 0.7697, 0.7697, 0.7829, 0.7829, 0.7895, 0.7895, 0.8026, 0.8026, 0.8224, 0.8224, 0.8289, 0.8289, 0.8355, 0.8355, 0.8553, 0.8553, 0.8684, 0.8684, 0.875, 0.875, 0.8816, 0.8816, 0.8947, 0.8947, 0.9013, 0.9013, 0.9079, 0.9079, 0.9211, 0.9211, 0.9276, 0.9276, 0.9342, 0.9342, 0.9408, 0.9408, 0.9474, 0.9474, 0.9605, 0.9605, 0.9671, 0.9671, 0.9803, 0.9803, 0.9868, 0.9868, 0.9934, 0.9934, 1.0, 1.0, 1.0], "auc": 0.923}, "pr_curve": {"recall": [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.9934, 0.9934, 0.9934, 0.9868, 0.9803, 0.9671, 0.9671, 0.9671, 0.9671, 0.9539, 0.9474, 0.9342, 0.9276, 0.9211, 0.9013, 0.8816, 0.8684, 0.8553, 0.8355, 0.8289, 0.7895, 0.7697, 0.7434, 0.7171, 0.6579, 0.6053, 0.5526, 0.5132, 0.4671, 0.4145, 0.375, 0.3158, 0.2566, 0.1974, 0.1316, 0.0658, 0.0], "precision": [0.304, 0.3102, 0.3167, 0.3234, 0.3304, 0.3378, 0.3455, 0.3535, 0.3619, 0.3707, 0.38, 0.3897, 0.4, 0.4108, 0.4194, 0.4314, 0.4441, 0.4545, 0.4656, 0.4742, 0.49, 0.5069, 0.525, 0.537, 0.5538, 0.568, 0.5875, 0.6087, 0.6227, 0.6381, 0.66, 0.6842, 0.7056, 0.7412, 0.75, 0.78, 0.8071, 0.8385, 0.8333, 0.8364, 0.84, 0.8667, 0.8875, 0.9, 0.95, 0.96, 0.975, 1.0, 1.0, 1.0, 1.0], "ap": 0.8614}, "feature_importances": null}, "K-Plus Proches Voisins (KNN)": {"model_name": "K-Plus Proches Voisins (KNN)", "tier": "4. Mod\u00e8le Simple", "type": "Instance-based (Lazy Learning)", "description": "Classification bas\u00e9e sur la proximit\u00e9 g\u00e9om\u00e9trique dans l'espace normalis\u00e9.", "course_note": "Non-param\u00e9trique, tr\u00e8s sensible \u00e0 la standardisation des donn\u00e9es et au d\u00e9s\u00e9quilibre.", "fit_time": 0.11, "accuracy": {"mean": 0.792, "std": 0.024, "str": "0.7920 \u00b1 0.0240"}, "precision": {"mean": 0.8193, "std": 0.1022, "str": "0.8193 \u00b1 0.1022"}, "recall": {"mean": 0.4215, "std": 0.092, "str": "0.4215 \u00b1 0.0920"}, "f1_score": {"mean": 0.5465, "std": 0.074, "str": "0.5465 \u00b1 0.0740"}, "precision_macro": {"mean": 0.8054, "std": 0.0509, "str": "0.8054 \u00b1 0.0509"}, "recall_macro": {"mean": 0.6877, "std": 0.0394, "str": "0.6877 \u00b1 0.0394"}, "f1_macro": {"mean": 0.7056, "std": 0.0425, "str": "0.7056 \u00b1 0.0425"}, "roc_auc": {"mean": 0.8611, "std": 0.0377, "str": "0.8611 \u00b1 0.0377"}, "ap": {"mean": 0.7721, "std": 0.0422, "str": "0.7721 \u00b1 0.0422"}, "confusion_matrix": [[332, 16], [88, 64]], "roc_curve": {"fpr": [0.0, 0.0, 0.0029, 0.0057, 0.0086, 0.0115, 0.0201, 0.023, 0.0316, 0.0345, 0.0374, 0.0402, 0.0431, 0.046, 0.0489, 0.0517, 0.0546, 0.0575, 0.0632, 0.0718, 0.0747, 0.0833, 0.092, 0.1121, 0.1149, 0.1264, 0.1293, 0.1379, 0.1466, 0.158, 0.1667, 0.1695, 0.1753, 0.1897, 0.1983, 0.227, 0.2299, 0.2414, 0.2586, 0.273, 0.2759, 0.296, 0.3046, 0.3391, 0.3764, 0.3793, 0.3908, 0.4167, 0.4282, 0.4339, 0.4368, 0.4425, 0.4511, 0.4569, 0.4914, 0.5, 0.5057, 1.0, 1.0], "tpr": [0.0, 0.1776, 0.2237, 0.2303, 0.2434, 0.2632, 0.3026, 0.3553, 0.3684, 0.3816, 0.3947, 0.4079, 0.4211, 0.4671, 0.4803, 0.5329, 0.5461, 0.5526, 0.5789, 0.5921, 0.6053, 0.6118, 0.6579, 0.6645, 0.6711, 0.6908, 0.7039, 0.7171, 0.7303, 0.7368, 0.75, 0.7566, 0.7632, 0.7763, 0.7895, 0.7961, 0.8026, 0.8092, 0.8158, 0.8224, 0.8289, 0.8421, 0.8487, 0.8553, 0.8618, 0.8684, 0.875, 0.8816, 0.8882, 0.8947, 0.9013, 0.9079, 0.9145, 0.9276, 0.9342, 0.9408, 0.9474, 1.0, 1.0], "auc": 0.8611}, "pr_curve": {"recall": [1.0, 0.9342, 0.9276, 0.9276, 0.9145, 0.9079, 0.8882, 0.8816, 0.875, 0.8684, 0.8618, 0.8553, 0.8553, 0.8487, 0.8487, 0.8421, 0.8289, 0.8224, 0.8158, 0.8092, 0.8026, 0.7895, 0.7895, 0.7763, 0.7632, 0.75, 0.7303, 0.7171, 0.7039, 0.6842, 0.6711, 0.6579, 0.6447, 0.6118, 0.6053, 0.5789, 0.5526, 0.5329, 0.5, 0.4671, 0.4342, 0.4079, 0.3816, 0.3553, 0.3289, 0.2961, 0.2632, 0.2434, 0.2171, 0.1776, 0.1447, 0.1053, 0.0658], "precision": [0.304, 0.4494, 0.4548, 0.4638, 0.4664, 0.4726, 0.472, 0.4786, 0.4854, 0.4925, 0.5, 0.5078, 0.52, 0.5287, 0.542, 0.5517, 0.5575, 0.5682, 0.5794, 0.5913, 0.604, 0.6122, 0.6316, 0.6413, 0.6517, 0.6628, 0.6687, 0.6813, 0.6948, 0.7027, 0.7183, 0.7353, 0.7538, 0.75, 0.7797, 0.7857, 0.7925, 0.81, 0.8085, 0.8068, 0.8049, 0.8158, 0.8286, 0.8438, 0.8621, 0.8654, 0.8696, 0.925, 0.9706, 0.9643, 1.0, 1.0, 1.0], "ap": 0.7721}, "feature_importances": null}, "SVM (Support Vector Machine)": {"model_name": "SVM (Support Vector Machine)", "tier": "5. Mod\u00e8le Lin\u00e9aire & Noyau", "type": "Kernel / Margin Maximizer", "description": "S\u00e9parateur \u00e0 vaste marge dans un espace de Hilbert via noyau RBF.", "course_note": "Excellent pouvoir de g\u00e9n\u00e9ralisation dans les espaces multidimensionnels.", "fit_time": 0.13, "accuracy": {"mean": 0.868, "std": 0.0306, "str": "0.8680 \u00b1 0.0306"}, "precision": {"mean": 0.8381, "std": 0.0571, "str": "0.8381 \u00b1 0.0571"}, "recall": {"mean": 0.7045, "std": 0.0655, "str": "0.7045 \u00b1 0.0655"}, "f1_score": {"mean": 0.7641, "std": 0.0556, "str": "0.7641 \u00b1 0.0556"}, "precision_macro": {"mean": 0.8587, "std": 0.038, "str": "0.8587 \u00b1 0.0380"}, "recall_macro": {"mean": 0.822, "std": 0.0378, "str": "0.8220 \u00b1 0.0378"}, "f1_macro": {"mean": 0.8362, "std": 0.0382, "str": "0.8362 \u00b1 0.0382"}, "roc_auc": {"mean": 0.9309, "std": 0.0227, "str": "0.9309 \u00b1 0.0227"}, "ap": {"mean": 0.8693, "std": 0.0259, "str": "0.8693 \u00b1 0.0259"}, "confusion_matrix": [[327, 21], [45, 107]], "roc_curve": {"fpr": [0.0, 0.0, 0.0, 0.0029, 0.0029, 0.0057, 0.0057, 0.0086, 0.0086, 0.0172, 0.0172, 0.023, 0.023, 0.0259, 0.0259, 0.0287, 0.0287, 0.0316, 0.0316, 0.0374, 0.0374, 0.0402, 0.0402, 0.0431, 0.0431, 0.046, 0.046, 0.0489, 0.0489, 0.0546, 0.0546, 0.0575, 0.0575, 0.0603, 0.0603, 0.0661, 0.0661, 0.069, 0.069, 0.0776, 0.0805, 0.0805, 0.0862, 0.0862, 0.092, 0.092, 0.0948, 0.0948, 0.0977, 0.0977, 0.1006, 0.1006, 0.1034, 0.1034, 0.1063, 0.1063, 0.1236, 0.1236, 0.1264, 0.1264, 0.1322, 0.1322, 0.158, 0.158, 0.1609, 0.1609, 0.1724, 0.1724, 0.181, 0.181, 0.204, 0.204, 0.2155, 0.2155, 0.2184, 0.2184, 0.273, 0.273, 0.2759, 0.2759, 0.296, 0.296, 0.3305, 0.3305, 0.3477, 0.3477, 0.4425, 0.4425, 0.4511, 0.4511, 0.4598, 0.4598, 0.5833, 0.5833, 0.6006, 0.6006, 0.6149, 0.6149, 1.0, 1.0], "tpr": [0.0, 0.0066, 0.25, 0.25, 0.2961, 0.2961, 0.3092, 0.3092, 0.4539, 0.4539, 0.4803, 0.4803, 0.5, 0.5, 0.5197, 0.5197, 0.5263, 0.5263, 0.5526, 0.5526, 0.5921, 0.5921, 0.6184, 0.6184, 0.6382, 0.6382, 0.6645, 0.6645, 0.6776, 0.6776, 0.6908, 0.6908, 0.6974, 0.6974, 0.7237, 0.7237, 0.7303, 0.7303, 0.7434, 0.75, 0.75, 0.7566, 0.7566, 0.7763, 0.7763, 0.7895, 0.7895, 0.8026, 0.8026, 0.8092, 0.8092, 0.8224, 0.8224, 0.8289, 0.8289, 0.8355, 0.8355, 0.8487, 0.8487, 0.8553, 0.8553, 0.8618, 0.8618, 0.8684, 0.8684, 0.875, 0.875, 0.8816, 0.8816, 0.8882, 0.8882, 0.8947, 0.8947, 0.9079, 0.9079, 0.9211, 0.9211, 0.9276, 0.9276, 0.9408, 0.9408, 0.9474, 0.9474, 0.9539, 0.9539, 0.9605, 0.9605, 0.9671, 0.9671, 0.9737, 0.9737, 0.9803, 0.9803, 0.9868, 0.9868, 0.9934, 0.9934, 1.0, 1.0, 1.0], "auc": 0.9309}, "pr_curve": {"recall": [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.9934, 0.9868, 0.9803, 0.9803, 0.9803, 0.9803, 0.9803, 0.9671, 0.9605, 0.9605, 0.9605, 0.9539, 0.9474, 0.9474, 0.9408, 0.9211, 0.9211, 0.9013, 0.8882, 0.8816, 0.8618, 0.8553, 0.8355, 0.8092, 0.7763, 0.7434, 0.7039, 0.6711, 0.625, 0.5789, 0.5329, 0.4934, 0.4539, 0.4079, 0.3487, 0.2961, 0.25, 0.1908, 0.1316, 0.0724, 0.0132], "precision": [0.304, 0.3096, 0.3154, 0.3214, 0.3276, 0.3341, 0.3408, 0.3478, 0.3551, 0.3628, 0.3707, 0.3791, 0.3878, 0.3969, 0.4064, 0.4137, 0.4213, 0.4294, 0.4408, 0.4529, 0.4656, 0.4791, 0.4868, 0.4983, 0.5141, 0.5309, 0.5451, 0.5603, 0.5806, 0.5983, 0.6087, 0.6335, 0.6462, 0.665, 0.6907, 0.7081, 0.7386, 0.7605, 0.7785, 0.7919, 0.8248, 0.8359, 0.8571, 0.8636, 0.8713, 0.8804, 0.9036, 0.9324, 0.9538, 0.9464, 0.9574, 1.0, 1.0, 1.0, 1.0, 1.0], "ap": 0.8693}, "feature_importances": null}, "Random Forest (RF / RM)": {"model_name": "Random Forest (RF / RM)", "tier": "6. Ensemble Learning (Bagging)", "type": "Ensemble (Bagging)", "description": "For\u00eat al\u00e9atoire d'arbres d\u00e9corr\u00e9l\u00e9s avec bootstrap et sous-\u00e9chantillonnage d'attributs.", "course_note": "R\u00e9duction drastique de la variance sans augmenter le biais. Fournit l'importance des variables.", "fit_time": 0.85, "accuracy": {"mean": 0.862, "std": 0.0075, "str": "0.8620 \u00b1 0.0075"}, "precision": {"mean": 0.8503, "std": 0.0205, "str": "0.8503 \u00b1 0.0205"}, "recall": {"mean": 0.6645, "std": 0.0373, "str": "0.6645 \u00b1 0.0373"}, "f1_score": {"mean": 0.7449, "std": 0.018, "str": "0.7449 \u00b1 0.0180"}, "precision_macro": {"mean": 0.8584, "std": 0.0079, "str": "0.8584 \u00b1 0.0079"}, "recall_macro": {"mean": 0.8064, "std": 0.0141, "str": "0.8064 \u00b1 0.0141"}, "f1_macro": {"mean": 0.8251, "std": 0.0109, "str": "0.8251 \u00b1 0.0109"}, "roc_auc": {"mean": 0.9277, "std": 0.0228, "str": "0.9277 \u00b1 0.0228"}, "ap": {"mean": 0.8623, "std": 0.0392, "str": "0.8623 \u00b1 0.0392"}, "confusion_matrix": [[330, 18], [51, 101]], "roc_curve": {"fpr": [0.0, 0.0, 0.0029, 0.0057, 0.0086, 0.0115, 0.0201, 0.023, 0.0259, 0.0287, 0.0316, 0.0374, 0.0402, 0.0431, 0.0489, 0.0517, 0.0546, 0.0575, 0.0632, 0.0718, 0.0776, 0.0805, 0.0833, 0.0862, 0.092, 0.1006, 0.1092, 0.1121, 0.1178, 0.1207, 0.1322, 0.1379, 0.1408, 0.1437, 0.1494, 0.1523, 0.1552, 0.1724, 0.1897, 0.2155, 0.227, 0.2356, 0.2443, 0.296, 0.3075, 0.3247, 0.4109, 0.431, 0.4626, 0.4713, 0.6264, 0.6523, 0.6753, 1.0], "tpr": [0.0, 0.0921, 0.1184, 0.2105, 0.3882, 0.4342, 0.5, 0.5132, 0.5461, 0.5526, 0.5855, 0.6184, 0.6316, 0.6513, 0.6579, 0.6711, 0.6776, 0.6908, 0.6974, 0.7039, 0.7105, 0.7171, 0.7237, 0.7368, 0.75, 0.7632, 0.7829, 0.7895, 0.8026, 0.8092, 0.8224, 0.8355, 0.8487, 0.8553, 0.8618, 0.8684, 0.875, 0.8947, 0.9013, 0.9079, 0.9145, 0.9211, 0.9276, 0.9342, 0.9474, 0.9539, 0.9605, 0.9671, 0.9737, 0.9803, 0.9868, 0.9934, 1.0, 1.0], "auc": 0.9277}, "pr_curve": {"recall": [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.9934, 0.9868, 0.9803, 0.9803, 0.9803, 0.9803, 0.9803, 0.9737, 0.9671, 0.9605, 0.9539, 0.9539, 0.9539, 0.9408, 0.9276, 0.9276, 0.9145, 0.9013, 0.8947, 0.875, 0.8553, 0.8158, 0.7895, 0.7566, 0.7237, 0.6974, 0.6711, 0.6316, 0.5855, 0.5329, 0.4803, 0.4342, 0.375, 0.3092, 0.2434, 0.1842, 0.1184, 0.0658, 0.0], "precision": [0.304, 0.3102, 0.3167, 0.3234, 0.3304, 0.3378, 0.3455, 0.3535, 0.3619, 0.3707, 0.38, 0.3897, 0.3974, 0.4054, 0.4139, 0.4257, 0.4382, 0.4515, 0.4656, 0.4774, 0.49, 0.5034, 0.5179, 0.537, 0.5577, 0.572, 0.5875, 0.613, 0.6318, 0.6524, 0.68, 0.7, 0.7222, 0.7294, 0.75, 0.7667, 0.7857, 0.8154, 0.85, 0.8727, 0.89, 0.9, 0.9125, 0.9429, 0.95, 0.94, 0.925, 0.9333, 0.9, 1.0, 1.0], "ap": 0.8623}, "feature_importances": null}, "AdaBoost": {"model_name": "AdaBoost", "tier": "6. Ensemble Learning (Boosting)", "type": "Ensemble (Sequential Boosting)", "description": "Boosting adaptatif augmentant le poids des individus mal class\u00e9s au fil des it\u00e9rations.", "course_note": "Focalisation sur les cas difficiles (ex: faux n\u00e9gatifs cardiaques).", "fit_time": 0.58, "accuracy": {"mean": 0.86, "std": 0.0167, "str": "0.8600 \u00b1 0.0167"}, "precision": {"mean": 0.8454, "std": 0.0482, "str": "0.8454 \u00b1 0.0482"}, "recall": {"mean": 0.6645, "std": 0.0236, "str": "0.6645 \u00b1 0.0236"}, "f1_score": {"mean": 0.7432, "std": 0.0225, "str": "0.7432 \u00b1 0.0225"}, "precision_macro": {"mean": 0.8556, "std": 0.0266, "str": "0.8556 \u00b1 0.0266"}, "recall_macro": {"mean": 0.8049, "std": 0.0145, "str": "0.8049 \u00b1 0.0145"}, "f1_macro": {"mean": 0.8234, "std": 0.0174, "str": "0.8234 \u00b1 0.0174"}, "roc_auc": {"mean": 0.9248, "std": 0.0268, "str": "0.9248 \u00b1 0.0268"}, "ap": {"mean": 0.8708, "std": 0.0275, "str": "0.8708 \u00b1 0.0275"}, "confusion_matrix": [[329, 19], [51, 101]], "roc_curve": {"fpr": [0.0, 0.0, 0.0029, 0.0057, 0.0086, 0.0115, 0.0144, 0.0172, 0.0201, 0.023, 0.0259, 0.0374, 0.0402, 0.046, 0.0632, 0.069, 0.0718, 0.0805, 0.0833, 0.0862, 0.092, 0.0948, 0.1034, 0.1063, 0.1092, 0.1121, 0.1178, 0.1236, 0.1264, 0.1379, 0.1552, 0.1667, 0.1782, 0.1839, 0.1868, 0.1983, 0.2069, 0.2184, 0.2241, 0.2443, 0.2529, 0.2586, 0.2644, 0.2989, 0.319, 0.3563, 0.3851, 0.3937, 0.4052, 0.4224, 0.4339, 0.4454, 0.4626, 0.4655, 0.4713, 0.4856, 0.5172, 0.5517, 0.5862, 0.6667, 0.7126, 0.7241, 0.75, 0.7701, 0.7874, 0.8822, 0.9052, 0.9167, 0.9253, 0.9684, 0.9943, 1.0], "tpr": [0.0, 0.1513, 0.3684, 0.4013, 0.4145, 0.4276, 0.4342, 0.4671, 0.4737, 0.5132, 0.5197, 0.5329, 0.5395, 0.6184, 0.6645, 0.6711, 0.6974, 0.7105, 0.7237, 0.7434, 0.75, 0.7566, 0.7632, 0.7697, 0.7763, 0.7829, 0.7895, 0.7961, 0.8026, 0.8092, 0.8158, 0.8224, 0.8355, 0.8618, 0.8684, 0.8816, 0.8882, 0.8947, 0.9013, 0.9079, 0.9145, 0.9211, 0.9342, 0.9408, 0.9474, 0.9474, 0.9474, 0.9539, 0.9539, 0.9605, 0.9605, 0.9671, 0.9671, 0.9737, 0.9803, 0.9803, 0.9868, 0.9868, 0.9868, 0.9868, 0.9868, 0.9868, 0.9934, 0.9934, 0.9934, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0], "auc": 0.9248}, "pr_curve": {"recall": [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.9934, 0.9934, 0.9868, 0.9868, 0.9868, 0.9868, 0.9868, 0.9868, 0.9868, 0.9803, 0.9803, 0.9671, 0.9605, 0.9605, 0.9474, 0.9474, 0.9474, 0.9408, 0.9342, 0.9211, 0.9079, 0.8882, 0.875, 0.8355, 0.8224, 0.8092, 0.7895, 0.7632, 0.7368, 0.6974, 0.6645, 0.6382, 0.5921, 0.5395, 0.5132, 0.4671, 0.4276, 0.3684, 0.3158, 0.2566, 0.1974, 0.1447, 0.0855, 0.0263], "precision": [0.304, 0.3115, 0.3173, 0.3255, 0.3333, 0.34, 0.347, 0.3543, 0.3604, 0.3701, 0.3769, 0.3856, 0.3968, 0.4065, 0.4167, 0.431, 0.4464, 0.4557, 0.4686, 0.4788, 0.4916, 0.5087, 0.5199, 0.5393, 0.5581, 0.5766, 0.5941, 0.6114, 0.6273, 0.6522, 0.6717, 0.672, 0.6944, 0.7193, 0.7453, 0.7632, 0.7887, 0.797, 0.8279, 0.8584, 0.8654, 0.8632, 0.907, 0.9221, 0.9559, 0.9655, 0.9796, 0.975, 0.9677, 1.0, 1.0, 1.0], "ap": 0.8708}, "feature_importances": null}, "XGBoost": {"model_name": "XGBoost", "tier": "6. Ensemble Learning (Boosting)", "type": "Extreme Gradient Boosting", "description": "Gradient Boosting optimis\u00e9 de second ordre avec r\u00e9gularisation L1/L2 int\u00e9gr\u00e9e.", "course_note": "L'un des algorithmes les plus puissants sur donn\u00e9es tabulaires en Data Mining.", "fit_time": 0.57, "accuracy": {"mean": 0.854, "std": 0.0258, "str": "0.8540 \u00b1 0.0258"}, "precision": {"mean": 0.7915, "std": 0.0524, "str": "0.7915 \u00b1 0.0524"}, "recall": {"mean": 0.711, "std": 0.0543, "str": "0.7110 \u00b1 0.0543"}, "f1_score": {"mean": 0.7476, "std": 0.0411, "str": "0.7476 \u00b1 0.0411"}, "precision_macro": {"mean": 0.8353, "std": 0.0326, "str": "0.8353 \u00b1 0.0326"}, "recall_macro": {"mean": 0.8137, "std": 0.0306, "str": "0.8137 \u00b1 0.0306"}, "f1_macro": {"mean": 0.8224, "std": 0.0297, "str": "0.8224 \u00b1 0.0297"}, "roc_auc": {"mean": 0.9272, "std": 0.021, "str": "0.9272 \u00b1 0.0210"}, "ap": {"mean": 0.8532, "std": 0.0328, "str": "0.8532 \u00b1 0.0328"}, "confusion_matrix": [[319, 29], [44, 108]], "roc_curve": {"fpr": [0.0, 0.0, 0.0, 0.0029, 0.0029, 0.0057, 0.0057, 0.0086, 0.0086, 0.0115, 0.0115, 0.0144, 0.0144, 0.0201, 0.0201, 0.0259, 0.0259, 0.0287, 0.0287, 0.0345, 0.0345, 0.0374, 0.0374, 0.0402, 0.0402, 0.046, 0.046, 0.0489, 0.0489, 0.0575, 0.0575, 0.0603, 0.0603, 0.0632, 0.0632, 0.0776, 0.0776, 0.0833, 0.0833, 0.0862, 0.0862, 0.0891, 0.0891, 0.0977, 0.0977, 0.1006, 0.1006, 0.1034, 0.1034, 0.1063, 0.1063, 0.1092, 0.1092, 0.1178, 0.1178, 0.1207, 0.1207, 0.1236, 0.1236, 0.1379, 0.1379, 0.1408, 0.1408, 0.1494, 0.1494, 0.1609, 0.1609, 0.1724, 0.1724, 0.1983, 0.1983, 0.204, 0.204, 0.2241, 0.2241, 0.227, 0.227, 0.2586, 0.2586, 0.2672, 0.2672, 0.2701, 0.2701, 0.2874, 0.2874, 0.3218, 0.3218, 0.4598, 0.4598, 0.5144, 0.5144, 0.6063, 0.6063, 0.7586, 0.7586, 0.7989, 0.7989, 1.0, 1.0], "tpr": [0.0, 0.0066, 0.1447, 0.1447, 0.1842, 0.1842, 0.1974, 0.1974, 0.2632, 0.2632, 0.3026, 0.3026, 0.3224, 0.3224, 0.4342, 0.4342, 0.5395, 0.5395, 0.5592, 0.5592, 0.5855, 0.5855, 0.6184, 0.6184, 0.625, 0.625, 0.6513, 0.6513, 0.6711, 0.6711, 0.6842, 0.6842, 0.6974, 0.6974, 0.7039, 0.7039, 0.7105, 0.7105, 0.7171, 0.7171, 0.7303, 0.7303, 0.7632, 0.7632, 0.7697, 0.7697, 0.7763, 0.7763, 0.8026, 0.8026, 0.8092, 0.8092, 0.8158, 0.8158, 0.8224, 0.8224, 0.8355, 0.8355, 0.8421, 0.8421, 0.8618, 0.8618, 0.8684, 0.8684, 0.875, 0.875, 0.8882, 0.8882, 0.9013, 0.9013, 0.9079, 0.9079, 0.9211, 0.9211, 0.9276, 0.9276, 0.9342, 0.9342, 0.9408, 0.9408, 0.9474, 0.9474, 0.9539, 0.9539, 0.9605, 0.9605, 0.9671, 0.9671, 0.9737, 0.9737, 0.9803, 0.9803, 0.9868, 0.9868, 0.9934, 0.9934, 1.0, 1.0, 1.0], "auc": 0.9272}, "pr_curve": {"recall": [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.9934, 0.9868, 0.9868, 0.9868, 0.9868, 0.9868, 0.9803, 0.9803, 0.9803, 0.9803, 0.9737, 0.9737, 0.9671, 0.9671, 0.9671, 0.9671, 0.9671, 0.9605, 0.9539, 0.9342, 0.9276, 0.9145, 0.9013, 0.8816, 0.8618, 0.8355, 0.8092, 0.7632, 0.7237, 0.7039, 0.6711, 0.625, 0.5789, 0.5329, 0.4671, 0.4145, 0.3487, 0.3026, 0.2434, 0.1842, 0.1316, 0.0658, 0.0], "precision": [0.304, 0.3102, 0.3167, 0.3234, 0.3304, 0.3378, 0.3455, 0.3535, 0.3595, 0.3659, 0.375, 0.3846, 0.3947, 0.4054, 0.4139, 0.4257, 0.4382, 0.4515, 0.4625, 0.4774, 0.49, 0.5069, 0.525, 0.5444, 0.5654, 0.584, 0.6042, 0.6174, 0.6409, 0.6619, 0.685, 0.7053, 0.7278, 0.7471, 0.7688, 0.7733, 0.7857, 0.8231, 0.85, 0.8636, 0.88, 0.9, 0.8875, 0.9, 0.8833, 0.92, 0.925, 0.9333, 1.0, 1.0, 1.0], "ap": 0.8532}, "feature_importances": null}, "Stacking Classifier": {"model_name": "Stacking Classifier", "tier": "7. M\u00e9ta-Ensemble (Stacking)", "type": "Meta-Learning", "description": "Combinaison h\u00e9t\u00e9rog\u00e8ne (RF + Na\u00efve Bayes + KNN + XGBoost) entra\u00een\u00e9e par un m\u00e9ta-classifieur LogisticRegression.", "course_note": "Exploite les forces compl\u00e9mentaires de paradigmes de classification h\u00e9t\u00e9rog\u00e8nes.", "fit_time": 10.07, "accuracy": {"mean": 0.868, "std": 0.0264, "str": "0.8680 \u00b1 0.0264"}, "precision": {"mean": 0.8161, "std": 0.0407, "str": "0.8161 \u00b1 0.0407"}, "recall": {"mean": 0.7308, "std": 0.0495, "str": "0.7308 \u00b1 0.0495"}, "f1_score": {"mean": 0.7709, "std": 0.045, "str": "0.7709 \u00b1 0.0450"}, "precision_macro": {"mean": 0.8517, "std": 0.0309, "str": "0.8517 \u00b1 0.0309"}, "recall_macro": {"mean": 0.8294, "std": 0.0322, "str": "0.8294 \u00b1 0.0322"}, "f1_macro": {"mean": 0.8391, "std": 0.0318, "str": "0.8391 \u00b1 0.0318"}, "roc_auc": {"mean": 0.9365, "std": 0.0213, "str": "0.9365 \u00b1 0.0213"}, "ap": {"mean": 0.884, "std": 0.031, "str": "0.8840 \u00b1 0.0310"}, "confusion_matrix": [[323, 25], [41, 111]], "roc_curve": {"fpr": [0.0, 0.0, 0.0, 0.0029, 0.0029, 0.0057, 0.0057, 0.0086, 0.0086, 0.0115, 0.0115, 0.0144, 0.0144, 0.0201, 0.0201, 0.023, 0.023, 0.0259, 0.0259, 0.0287, 0.0287, 0.0345, 0.0345, 0.0402, 0.0402, 0.046, 0.046, 0.0517, 0.0517, 0.0546, 0.0546, 0.0603, 0.0603, 0.069, 0.069, 0.0718, 0.0718, 0.0747, 0.0747, 0.0776, 0.0776, 0.0805, 0.0805, 0.0833, 0.0833, 0.0862, 0.0862, 0.092, 0.092, 0.0948, 0.0948, 0.1034, 0.1034, 0.1236, 0.1236, 0.1322, 0.1322, 0.1408, 0.1408, 0.1494, 0.1494, 0.1753, 0.1753, 0.1839, 0.1839, 0.1897, 0.1897, 0.2011, 0.2011, 0.2098, 0.2098, 0.2241, 0.2241, 0.2529, 0.2529, 0.2615, 0.2615, 0.342, 0.342, 0.3506, 0.3506, 0.4339, 0.4339, 0.4598, 0.4598, 0.5057, 0.5057, 0.7011, 0.7011, 0.7328, 0.7328, 1.0, 1.0], "tpr": [0.0, 0.0066, 0.2039, 0.2039, 0.25, 0.25, 0.375, 0.375, 0.4211, 0.4211, 0.5, 0.5, 0.5197, 0.5197, 0.5526, 0.5526, 0.5592, 0.5592, 0.5855, 0.5855, 0.5921, 0.5921, 0.6316, 0.6316, 0.6382, 0.6382, 0.6645, 0.6645, 0.6711, 0.6711, 0.6908, 0.6908, 0.6974, 0.6974, 0.7171, 0.7171, 0.7368, 0.7368, 0.7434, 0.7434, 0.75, 0.75, 0.7566, 0.7566, 0.7961, 0.7961, 0.8026, 0.8026, 0.8092, 0.8092, 0.8421, 0.8421, 0.8487, 0.8487, 0.8553, 0.8553, 0.8618, 0.8618, 0.8684, 0.8684, 0.875, 0.875, 0.8816, 0.8816, 0.9013, 0.9013, 0.9079, 0.9079, 0.9145, 0.9145, 0.9211, 0.9211, 0.9276, 0.9276, 0.9408, 0.9408, 0.9474, 0.9474, 0.9539, 0.9539, 0.9671, 0.9671, 0.9737, 0.9737, 0.9803, 0.9803, 0.9868, 0.9868, 0.9934, 0.9934, 1.0, 1.0, 1.0], "auc": 0.9365}, "pr_curve": {"recall": [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.9934, 0.9868, 0.9868, 0.9868, 0.9868, 0.9868, 0.9868, 0.9868, 0.9803, 0.9803, 0.9737, 0.9671, 0.9671, 0.9671, 0.9474, 0.9474, 0.9474, 0.9342, 0.9276, 0.9145, 0.8947, 0.875, 0.8618, 0.8487, 0.8355, 0.7961, 0.7434, 0.6974, 0.6711, 0.6316, 0.5921, 0.5461, 0.5, 0.4342, 0.375, 0.3158, 0.25, 0.1974, 0.1316, 0.0658, 0.0], "precision": [0.304, 0.3102, 0.3167, 0.3234, 0.3304, 0.3378, 0.3455, 0.3535, 0.3619, 0.3707, 0.3775, 0.3846, 0.3947, 0.4054, 0.4167, 0.4286, 0.4412, 0.4545, 0.4656, 0.4806, 0.4933, 0.5069, 0.525, 0.5444, 0.5538, 0.576, 0.6, 0.6174, 0.6409, 0.6619, 0.68, 0.7, 0.7278, 0.7588, 0.7937, 0.8067, 0.8071, 0.8154, 0.85, 0.8727, 0.9, 0.9222, 0.95, 0.9429, 0.95, 0.96, 0.95, 1.0, 1.0, 1.0, 1.0], "ap": 0.884}, "feature_importances": null}}, "balanced": {"Al\u00e9atoire (Uniform)": {"model_name": "Al\u00e9atoire (Uniform)", "tier": "1. Baseline Al\u00e9atoire", "type": "Dummy / Random", "description": "Tirage \u00e9quiprobable pur (1/K) sans aucun a priori.", "course_note": "Score plancher th\u00e9orique d'un classifieur sans information (50% pour binaire).", "fit_time": 0.15, "accuracy": {"mean": 0.476, "std": 0.0383, "str": "0.4760 \u00b1 0.0383"}, "precision": {"mean": 0.3036, "std": 0.0375, "str": "0.3036 \u00b1 0.0375"}, "recall": {"mean": 0.5585, "std": 0.0615, "str": "0.5585 \u00b1 0.0615"}, "f1_score": {"mean": 0.3933, "std": 0.0467, "str": "0.3933 \u00b1 0.0467"}, "precision_macro": {"mean": 0.4995, "std": 0.0384, "str": "0.4995 \u00b1 0.0384"}, "recall_macro": {"mean": 0.4991, "std": 0.0444, "str": "0.4991 \u00b1 0.0444"}, "f1_macro": {"mean": 0.4661, "std": 0.0395, "str": "0.4661 \u00b1 0.0395"}, "roc_auc": {"mean": 0.5, "std": 0.0, "str": "0.5000 \u00b1 0.0000"}, "ap": {"mean": 0.304, "std": 0.0049, "str": "0.3040 \u00b1 0.0049"}, "confusion_matrix": [[153, 195], [67, 85]], "roc_curve": {"fpr": [0.0, 1.0, 1.0], "tpr": [0.0, 1.0, 1.0], "auc": 0.5}, "pr_curve": {"recall": [1.0, 0.0], "precision": [0.304, 1.0], "ap": 0.304}, "feature_importances": null}, "Zero-R (Majoritaire)": {"model_name": "Zero-R (Majoritaire)", "tier": "2. Baseline Zero-R", "type": "Zero-Rule (Majority)", "description": "Pr\u00e9dit syst\u00e9matiquement la classe majoritaire de l'entra\u00eenement.", "course_note": "Seuil plancher universel d'Accuracy. Tout mod\u00e8le avec une accuracy < Zero-R est pire qu'inutile.", "fit_time": 0.1, "accuracy": {"mean": 0.696, "std": 0.0049, "str": "0.6960 \u00b1 0.0049"}, "precision": {"mean": 0.0, "std": 0.0, "str": "0.0000 \u00b1 0.0000"}, "recall": {"mean": 0.0, "std": 0.0, "str": "0.0000 \u00b1 0.0000"}, "f1_score": {"mean": 0.0, "std": 0.0, "str": "0.0000 \u00b1 0.0000"}, "precision_macro": {"mean": 0.348, "std": 0.0024, "str": "0.3480 \u00b1 0.0024"}, "recall_macro": {"mean": 0.5, "std": 0.0, "str": "0.5000 \u00b1 0.0000"}, "f1_macro": {"mean": 0.4104, "std": 0.0017, "str": "0.4104 \u00b1 0.0017"}, "roc_auc": {"mean": 0.5, "std": 0.0, "str": "0.5000 \u00b1 0.0000"}, "ap": {"mean": 0.304, "std": 0.0049, "str": "0.3040 \u00b1 0.0049"}, "confusion_matrix": [[348, 0], [152, 0]], "roc_curve": {"fpr": [0.0, 1.0, 1.0], "tpr": [0.0, 1.0, 1.0], "auc": 0.5}, "pr_curve": {"recall": [1.0, 0.0], "precision": [0.304, 1.0], "ap": 0.304}, "feature_importances": null}, "One-R (1 R\u00e8gle)": {"model_name": "One-R (1 R\u00e8gle)", "tier": "3. Baseline One-R", "type": "One-Rule (Decision Stump)", "description": "Classifieur bas\u00e9 sur un seul attribut explicatif (arbre de d\u00e9cision \u00e0 profondeur 1).", "course_note": "R\u00e8gle si-alors univari\u00e9e interpr\u00e9table. Atteint souvent 80-90% de la performance de mod\u00e8les complexes.", "fit_time": 0.1, "accuracy": {"mean": 0.788, "std": 0.0549, "str": "0.7880 \u00b1 0.0549"}, "precision": {"mean": 0.6583, "std": 0.1085, "str": "0.6583 \u00b1 0.1085"}, "recall": {"mean": 0.637, "std": 0.1403, "str": "0.6370 \u00b1 0.1403"}, "f1_score": {"mean": 0.6416, "std": 0.1124, "str": "0.6416 \u00b1 0.1124"}, "precision_macro": {"mean": 0.7524, "std": 0.072, "str": "0.7524 \u00b1 0.0720"}, "recall_macro": {"mean": 0.7451, "std": 0.0721, "str": "0.7451 \u00b1 0.0721"}, "f1_macro": {"mean": 0.7448, "std": 0.0728, "str": "0.7448 \u00b1 0.0728"}, "roc_auc": {"mean": 0.7451, "std": 0.0721, "str": "0.7451 \u00b1 0.0721"}, "ap": {"mean": 0.5379, "std": 0.0921, "str": "0.5379 \u00b1 0.0921"}, "confusion_matrix": [[297, 51], [55, 97]], "roc_curve": {"fpr": [0.0, 0.0316, 0.0632, 0.0833, 0.0977, 0.1466, 0.3161, 0.4971, 0.6839, 0.8506, 1.0, 1.0], "tpr": [0.0, 0.1382, 0.2105, 0.3487, 0.4803, 0.6382, 0.7632, 0.8224, 0.8882, 0.9539, 1.0, 1.0], "auc": 0.7451}, "pr_curve": {"recall": [1.0, 0.9539, 0.8882, 0.8224, 0.7632, 0.6382, 0.4803, 0.3487, 0.2105, 0.1382, 0.0], "precision": [0.304, 0.3288, 0.3619, 0.4195, 0.5133, 0.6554, 0.6822, 0.6463, 0.5926, 0.6562, 1.0], "ap": 0.5379}, "feature_importances": null}, "Arbre de D\u00e9cision (DT)": {"model_name": "Arbre de D\u00e9cision (DT)", "tier": "4. Mod\u00e8le Simple", "type": "Decision Tree", "description": "Arbre de classification hi\u00e9rarchique avec division par impuret\u00e9 de Gini.", "course_note": "Mod\u00e8le bo\u00eete blanche hautement interpr\u00e9table, sensible au surapprentissage si non \u00e9lagu\u00e9.", "fit_time": 0.12, "accuracy": {"mean": 0.776, "std": 0.0524, "str": "0.7760 \u00b1 0.0524"}, "precision": {"mean": 0.6282, "std": 0.0821, "str": "0.6282 \u00b1 0.0821"}, "recall": {"mean": 0.6716, "std": 0.1242, "str": "0.6716 \u00b1 0.1242"}, "f1_score": {"mean": 0.6433, "std": 0.0865, "str": "0.6433 \u00b1 0.0865"}, "precision_macro": {"mean": 0.7409, "std": 0.0569, "str": "0.7409 \u00b1 0.0569"}, "recall_macro": {"mean": 0.7467, "std": 0.0634, "str": "0.7467 \u00b1 0.0634"}, "f1_macro": {"mean": 0.7394, "std": 0.0606, "str": "0.7394 \u00b1 0.0606"}, "roc_auc": {"mean": 0.8191, "std": 0.0518, "str": "0.8191 \u00b1 0.0518"}, "ap": {"mean": 0.6354, "std": 0.0874, "str": "0.6354 \u00b1 0.0874"}, "confusion_matrix": [[286, 62], [50, 102]], "roc_curve": {"fpr": [0.0, 0.0833, 0.0891, 0.0891, 0.092, 0.0977, 0.0977, 0.1092, 0.1092, 0.1178, 0.1236, 0.1264, 0.1379, 0.1466, 0.1494, 0.1753, 0.1782, 0.2069, 0.2098, 0.2155, 0.2356, 0.2443, 0.25, 0.2586, 0.273, 0.2759, 0.2787, 0.2787, 0.2816, 0.319, 0.3649, 0.3793, 0.4684, 1.0, 1.0], "tpr": [0.0, 0.5, 0.5197, 0.5461, 0.5461, 0.5461, 0.5526, 0.5724, 0.5789, 0.5921, 0.5987, 0.5987, 0.6053, 0.625, 0.6316, 0.6711, 0.6711, 0.7237, 0.7303, 0.7368, 0.7697, 0.7697, 0.7697, 0.7763, 0.7829, 0.8092, 0.8092, 0.8224, 0.8487, 0.8684, 0.8684, 0.8684, 0.8816, 1.0, 1.0], "auc": 0.8191}, "pr_curve": {"recall": [1.0, 0.8816, 0.8684, 0.8684, 0.8684, 0.8684, 0.8487, 0.8224, 0.8092, 0.8092, 0.7829, 0.7763, 0.7697, 0.7697, 0.7697, 0.7368, 0.7303, 0.7237, 0.6711, 0.6711, 0.6316, 0.625, 0.6053, 0.5987, 0.5987, 0.5921, 0.5789, 0.5724, 0.5526, 0.5461, 0.5461, 0.5461, 0.5197, 0.5, 0.0], "precision": [0.304, 0.4512, 0.5, 0.5097, 0.5259, 0.5432, 0.5683, 0.5631, 0.5591, 0.5616, 0.5561, 0.5673, 0.5735, 0.5792, 0.5879, 0.5989, 0.6033, 0.6044, 0.622, 0.6258, 0.6486, 0.6507, 0.6571, 0.6741, 0.6791, 0.687, 0.6984, 0.696, 0.7119, 0.7094, 0.7217, 0.7281, 0.7182, 0.7238, 1.0], "ap": 0.6354}, "feature_importances": null}, "Na\u00efve Bayes (Bayi)": {"model_name": "Na\u00efve Bayes (Bayi)", "tier": "4. Mod\u00e8le Simple", "type": "Probabilistic / Bayesian", "description": "Th\u00e9or\u00e8me de Bayes avec hypoth\u00e8se forte d'ind\u00e9pendance conditionnelle des attributs.", "course_note": "Rapide, robuste au bruit, performant m\u00eame avec de petits \u00e9chantillons.", "fit_time": 0.1, "accuracy": {"mean": 0.856, "std": 0.0463, "str": "0.8560 \u00b1 0.0463"}, "precision": {"mean": 0.735, "std": 0.0767, "str": "0.7350 \u00b1 0.0767"}, "recall": {"mean": 0.829, "std": 0.0638, "str": "0.8290 \u00b1 0.0638"}, "f1_score": {"mean": 0.7786, "std": 0.0685, "str": "0.7786 \u00b1 0.0685"}, "precision_macro": {"mean": 0.8277, "std": 0.052, "str": "0.8277 \u00b1 0.0520"}, "recall_macro": {"mean": 0.8485, "std": 0.0506, "str": "0.8485 \u00b1 0.0506"}, "f1_macro": {"mean": 0.8359, "std": 0.0517, "str": "0.8359 \u00b1 0.0517"}, "roc_auc": {"mean": 0.9129, "std": 0.0446, "str": "0.9129 \u00b1 0.0446"}, "ap": {"mean": 0.8468, "std": 0.0659, "str": "0.8468 \u00b1 0.0659"}, "confusion_matrix": [[302, 46], [26, 126]], "roc_curve": {"fpr": [0.0, 0.0, 0.0, 0.0029, 0.0029, 0.0057, 0.0057, 0.0201, 0.0201, 0.023, 0.023, 0.0259, 0.0259, 0.0287, 0.0287, 0.0316, 0.0316, 0.0345, 0.0345, 0.0374, 0.0374, 0.0402, 0.0402, 0.0431, 0.0431, 0.046, 0.046, 0.0517, 0.0517, 0.0546, 0.0546, 0.0575, 0.0575, 0.0718, 0.0718, 0.0747, 0.0747, 0.0776, 0.0776, 0.0977, 0.0977, 0.1063, 0.1063, 0.1121, 0.1121, 0.1178, 0.1178, 0.1207, 0.1207, 0.1236, 0.1236, 0.1351, 0.1351, 0.1523, 0.1523, 0.1667, 0.1667, 0.1753, 0.1753, 0.1782, 0.1782, 0.2126, 0.2126, 0.2184, 0.2184, 0.2471, 0.2471, 0.2529, 0.2529, 0.2787, 0.2787, 0.3017, 0.3017, 0.3247, 0.3247, 0.3276, 0.3276, 0.3333, 0.3333, 0.3707, 0.3707, 0.4023, 0.4023, 0.4397, 0.4397, 0.454, 0.454, 0.4885, 0.4885, 0.5517, 0.5517, 0.5718, 0.5718, 0.7529, 0.7529, 0.773, 0.773, 1.0, 1.0], "tpr": [0.0, 0.0066, 0.1842, 0.1842, 0.3421, 0.3421, 0.3553, 0.3553, 0.3618, 0.3618, 0.3816, 0.3816, 0.4605, 0.4605, 0.4671, 0.4671, 0.4803, 0.4803, 0.5066, 0.5066, 0.5132, 0.5132, 0.5197, 0.5197, 0.5461, 0.5461, 0.5658, 0.5658, 0.6184, 0.6184, 0.6711, 0.6711, 0.6908, 0.6908, 0.7171, 0.7171, 0.7303, 0.7303, 0.7434, 0.7434, 0.75, 0.75, 0.7632, 0.7632, 0.7763, 0.7763, 0.8092, 0.8092, 0.8224, 0.8224, 0.8289, 0.8289, 0.8421, 0.8421, 0.8487, 0.8487, 0.8553, 0.8553, 0.8618, 0.8618, 0.875, 0.875, 0.8816, 0.8816, 0.8882, 0.8882, 0.9013, 0.9013, 0.9079, 0.9079, 0.9145, 0.9145, 0.9211, 0.9211, 0.9276, 0.9276, 0.9342, 0.9342, 0.9408, 0.9408, 0.9474, 0.9474, 0.9539, 0.9539, 0.9605, 0.9605, 0.9671, 0.9671, 0.9737, 0.9737, 0.9803, 0.9803, 0.9868, 0.9868, 0.9934, 0.9934, 1.0, 1.0, 1.0], "auc": 0.9129}, "pr_curve": {"recall": [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.9934, 0.9868, 0.9868, 0.9868, 0.9868, 0.9868, 0.9868, 0.9868, 0.9737, 0.9737, 0.9737, 0.9671, 0.9605, 0.9539, 0.9474, 0.9408, 0.9408, 0.9211, 0.9145, 0.9079, 0.8882, 0.8816, 0.875, 0.8553, 0.8421, 0.8289, 0.7829, 0.75, 0.7434, 0.6908, 0.6645, 0.6053, 0.5526, 0.5066, 0.4605, 0.4013, 0.3553, 0.3224, 0.2566, 0.1908, 0.1316, 0.0658, 0.0], "precision": [0.304, 0.3102, 0.3167, 0.3234, 0.3304, 0.3378, 0.3455, 0.3535, 0.3595, 0.3659, 0.375, 0.3846, 0.3947, 0.4054, 0.4167, 0.4286, 0.4353, 0.4485, 0.4625, 0.4742, 0.4867, 0.5, 0.5143, 0.5296, 0.55, 0.56, 0.5792, 0.6, 0.6136, 0.6381, 0.665, 0.6842, 0.7111, 0.7412, 0.7438, 0.76, 0.8071, 0.8077, 0.8417, 0.8364, 0.84, 0.8556, 0.875, 0.8714, 0.9, 0.98, 0.975, 0.9667, 1.0, 1.0, 1.0], "ap": 0.8468}, "feature_importances": null}, "K-Plus Proches Voisins (KNN)": {"model_name": "K-Plus Proches Voisins (KNN)", "tier": "4. Mod\u00e8le Simple", "type": "Instance-based (Lazy Learning)", "description": "Classification bas\u00e9e sur la proximit\u00e9 g\u00e9om\u00e9trique dans l'espace normalis\u00e9.", "course_note": "Non-param\u00e9trique, tr\u00e8s sensible \u00e0 la standardisation des donn\u00e9es et au d\u00e9s\u00e9quilibre.", "fit_time": 0.14, "accuracy": {"mean": 0.784, "std": 0.0779, "str": "0.7840 \u00b1 0.0779"}, "precision": {"mean": 0.6213, "std": 0.0908, "str": "0.6213 \u00b1 0.0908"}, "recall": {"mean": 0.8222, "std": 0.0537, "str": "0.8222 \u00b1 0.0537"}, "f1_score": {"mean": 0.7043, "std": 0.0729, "str": "0.7043 \u00b1 0.0729"}, "precision_macro": {"mean": 0.7636, "std": 0.0603, "str": "0.7636 \u00b1 0.0603"}, "recall_macro": {"mean": 0.7945, "std": 0.065, "str": "0.7945 \u00b1 0.0650"}, "f1_macro": {"mean": 0.7661, "std": 0.0736, "str": "0.7661 \u00b1 0.0736"}, "roc_auc": {"mean": 0.8851, "std": 0.0384, "str": "0.8851 \u00b1 0.0384"}, "ap": {"mean": 0.7899, "std": 0.042, "str": "0.7899 \u00b1 0.0420"}, "confusion_matrix": [[267, 81], [27, 125]], "roc_curve": {"fpr": [0.0, 0.0115, 0.0144, 0.0172, 0.0201, 0.023, 0.0345, 0.0402, 0.0431, 0.046, 0.0517, 0.0546, 0.0603, 0.0632, 0.0661, 0.069, 0.0747, 0.0833, 0.0862, 0.092, 0.0948, 0.1006, 0.1034, 0.1063, 0.1236, 0.1293, 0.1437, 0.1466, 0.1494, 0.1552, 0.158, 0.1609, 0.1724, 0.1782, 0.1868, 0.1983, 0.204, 0.2184, 0.2241, 0.2529, 0.2586, 0.2759, 0.2931, 0.3075, 0.3103, 0.319, 0.3362, 0.3908, 0.3937, 0.4138, 0.4253, 0.4483, 0.4569, 0.5086, 0.5489, 0.5575, 0.5632, 0.5776, 0.6034, 1.0, 1.0], "tpr": [0.0, 0.3224, 0.3487, 0.3618, 0.3947, 0.4474, 0.4803, 0.5066, 0.5197, 0.5329, 0.5395, 0.5461, 0.5526, 0.5658, 0.5987, 0.6184, 0.625, 0.6316, 0.6447, 0.6513, 0.6579, 0.6711, 0.6776, 0.6908, 0.6974, 0.7039, 0.7303, 0.7368, 0.7434, 0.75, 0.7566, 0.7697, 0.7763, 0.7829, 0.7895, 0.7961, 0.8092, 0.8158, 0.8224, 0.8289, 0.8355, 0.8487, 0.8553, 0.8618, 0.8684, 0.8816, 0.8882, 0.9013, 0.9079, 0.9145, 0.9211, 0.9276, 0.9408, 0.9539, 0.9605, 0.9671, 0.9737, 0.9934, 1.0, 1.0, 1.0], "auc": 0.8851}, "pr_curve": {"recall": [1.0, 1.0, 1.0, 0.9934, 0.9934, 0.9737, 0.9671, 0.9605, 0.9539, 0.9539, 0.9408, 0.9408, 0.9408, 0.9342, 0.9211, 0.9211, 0.9145, 0.9079, 0.8882, 0.8882, 0.8882, 0.8882, 0.8816, 0.8684, 0.8553, 0.8487, 0.8355, 0.8355, 0.8224, 0.8224, 0.8092, 0.8026, 0.7895, 0.7829, 0.7697, 0.75, 0.7368, 0.7039, 0.6974, 0.6908, 0.6776, 0.6579, 0.6382, 0.625, 0.5987, 0.5658, 0.5461, 0.5329, 0.5066, 0.4803, 0.4474, 0.4276, 0.3947, 0.3618, 0.3289, 0.2961], "precision": [0.304, 0.4075, 0.4142, 0.4183, 0.4254, 0.4241, 0.4286, 0.4332, 0.4381, 0.4462, 0.4483, 0.4569, 0.4658, 0.4718, 0.4746, 0.4844, 0.4912, 0.4982, 0.4982, 0.5094, 0.5212, 0.5336, 0.5425, 0.5477, 0.5532, 0.5633, 0.5695, 0.5853, 0.5924, 0.6098, 0.6181, 0.6321, 0.6417, 0.6575, 0.6686, 0.6746, 0.6871, 0.6815, 0.702, 0.7241, 0.741, 0.7519, 0.7638, 0.7851, 0.7913, 0.789, 0.8058, 0.8351, 0.8462, 0.8588, 0.8608, 0.8904, 0.8955, 0.9016, 0.9091, 0.9184], "ap": 0.7899}, "feature_importances": null}, "SVM (Support Vector Machine)": {"model_name": "SVM (Support Vector Machine)", "tier": "5. Mod\u00e8le Lin\u00e9aire & Noyau", "type": "Kernel / Margin Maximizer", "description": "S\u00e9parateur \u00e0 vaste marge dans un espace de Hilbert via noyau RBF.", "course_note": "Excellent pouvoir de g\u00e9n\u00e9ralisation dans les espaces multidimensionnels.", "fit_time": 0.21, "accuracy": {"mean": 0.874, "std": 0.0338, "str": "0.8740 \u00b1 0.0338"}, "precision": {"mean": 0.7771, "std": 0.05, "str": "0.7771 \u00b1 0.0500"}, "recall": {"mean": 0.8228, "std": 0.0624, "str": "0.8228 \u00b1 0.0624"}, "f1_score": {"mean": 0.7989, "std": 0.053, "str": "0.7989 \u00b1 0.0530"}, "precision_macro": {"mean": 0.8488, "std": 0.0378, "str": "0.8488 \u00b1 0.0378"}, "recall_macro": {"mean": 0.8596, "std": 0.0407, "str": "0.8596 \u00b1 0.0407"}, "f1_macro": {"mean": 0.8535, "std": 0.0388, "str": "0.8535 \u00b1 0.0388"}, "roc_auc": {"mean": 0.9318, "std": 0.0233, "str": "0.9318 \u00b1 0.0233"}, "ap": {"mean": 0.8684, "std": 0.0341, "str": "0.8684 \u00b1 0.0341"}, "confusion_matrix": [[312, 36], [27, 125]], "roc_curve": {"fpr": [0.0, 0.0, 0.0029, 0.0057, 0.0086, 0.0115, 0.0144, 0.0172, 0.0201, 0.023, 0.0259, 0.0374, 0.0402, 0.0489, 0.0517, 0.0575, 0.0603, 0.0632, 0.0661, 0.069, 0.0805, 0.0833, 0.0862, 0.0891, 0.0977, 0.1034, 0.1063, 0.1092, 0.1121, 0.1207, 0.1236, 0.1293, 0.1351, 0.158, 0.1667, 0.1954, 0.204, 0.2126, 0.2471, 0.2557, 0.2586, 0.2816, 0.2874, 0.296, 0.3247, 0.3276, 0.4023, 0.431, 0.4339, 0.4425, 0.523, 0.6466, 1.0, 1.0], "tpr": [0.0, 0.1316, 0.3289, 0.3618, 0.4211, 0.4408, 0.5263, 0.5461, 0.5526, 0.5789, 0.5855, 0.5921, 0.6053, 0.6316, 0.6382, 0.6447, 0.6513, 0.6579, 0.6842, 0.6908, 0.6974, 0.7171, 0.7303, 0.7434, 0.75, 0.7829, 0.8092, 0.8224, 0.8421, 0.8487, 0.8553, 0.8618, 0.8684, 0.875, 0.8816, 0.8882, 0.8947, 0.9013, 0.9079, 0.9145, 0.9211, 0.9276, 0.9342, 0.9408, 0.9474, 0.9539, 0.9605, 0.9671, 0.9737, 0.9803, 0.9868, 0.9934, 1.0, 1.0], "auc": 0.9318}, "pr_curve": {"recall": [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.9934, 0.9934, 0.9934, 0.9934, 0.9868, 0.9868, 0.9868, 0.9803, 0.9671, 0.9605, 0.9605, 0.9605, 0.9474, 0.9342, 0.9211, 0.9079, 0.9013, 0.8882, 0.8816, 0.875, 0.8487, 0.8092, 0.7632, 0.7171, 0.6908, 0.6447, 0.6053, 0.5855, 0.5461, 0.4868, 0.4276, 0.3684, 0.3158, 0.25, 0.1842, 0.125, 0.0592], "precision": [0.304, 0.3102, 0.3167, 0.3234, 0.3304, 0.3378, 0.3455, 0.3535, 0.3619, 0.3707, 0.38, 0.3897, 0.4, 0.4081, 0.4194, 0.4314, 0.4441, 0.4545, 0.4688, 0.4839, 0.4967, 0.5069, 0.5214, 0.5407, 0.5615, 0.576, 0.5917, 0.6087, 0.6273, 0.6524, 0.675, 0.7053, 0.7389, 0.7588, 0.7688, 0.7733, 0.7842, 0.814, 0.8235, 0.844, 0.899, 0.9326, 0.9367, 0.942, 0.9492, 0.9796, 0.9744, 0.9655, 1.0, 1.0], "ap": 0.8684}, "feature_importances": null}, "Random Forest (RF / RM)": {"model_name": "Random Forest (RF / RM)", "tier": "6. Ensemble Learning (Bagging)", "type": "Ensemble (Bagging)", "description": "For\u00eat al\u00e9atoire d'arbres d\u00e9corr\u00e9l\u00e9s avec bootstrap et sous-\u00e9chantillonnage d'attributs.", "course_note": "R\u00e9duction drastique de la variance sans augmenter le biais. Fournit l'importance des variables.", "fit_time": 0.96, "accuracy": {"mean": 0.858, "std": 0.0194, "str": "0.8580 \u00b1 0.0194"}, "precision": {"mean": 0.7923, "std": 0.0368, "str": "0.7923 \u00b1 0.0368"}, "recall": {"mean": 0.7239, "std": 0.0434, "str": "0.7239 \u00b1 0.0434"}, "f1_score": {"mean": 0.7559, "std": 0.0332, "str": "0.7559 \u00b1 0.0332"}, "precision_macro": {"mean": 0.8381, "std": 0.0239, "str": "0.8381 \u00b1 0.0239"}, "recall_macro": {"mean": 0.8203, "std": 0.0246, "str": "0.8203 \u00b1 0.0246"}, "f1_macro": {"mean": 0.8278, "std": 0.0233, "str": "0.8278 \u00b1 0.0233"}, "roc_auc": {"mean": 0.9256, "std": 0.0243, "str": "0.9256 \u00b1 0.0243"}, "ap": {"mean": 0.8538, "std": 0.0416, "str": "0.8538 \u00b1 0.0416"}, "confusion_matrix": [[319, 29], [42, 110]], "roc_curve": {"fpr": [0.0, 0.0, 0.0029, 0.0057, 0.0086, 0.0115, 0.0144, 0.0201, 0.0259, 0.0287, 0.0402, 0.0431, 0.046, 0.0489, 0.0517, 0.0546, 0.0575, 0.0603, 0.0661, 0.0718, 0.0747, 0.0776, 0.0805, 0.0833, 0.1034, 0.1092, 0.1121, 0.1178, 0.1264, 0.1293, 0.1322, 0.1351, 0.1379, 0.1408, 0.1667, 0.1782, 0.1925, 0.1954, 0.2011, 0.2126, 0.2155, 0.2241, 0.227, 0.2299, 0.2385, 0.2471, 0.2644, 0.3161, 0.3477, 0.3592, 0.3707, 0.3793, 0.4052, 0.4655, 0.4971, 0.5057, 0.5517, 1.0], "tpr": [0.0, 0.0921, 0.1382, 0.2368, 0.4211, 0.4868, 0.5, 0.5132, 0.5263, 0.5395, 0.5526, 0.5658, 0.6382, 0.6513, 0.6579, 0.6645, 0.6711, 0.6776, 0.6908, 0.7039, 0.7105, 0.7171, 0.7237, 0.7368, 0.7434, 0.75, 0.7697, 0.7895, 0.8026, 0.8092, 0.8158, 0.8224, 0.8289, 0.8355, 0.8487, 0.8553, 0.8618, 0.8684, 0.875, 0.8816, 0.8882, 0.8947, 0.9013, 0.9145, 0.9211, 0.9276, 0.9342, 0.9408, 0.9474, 0.9539, 0.9605, 0.9671, 0.9737, 0.9803, 0.9868, 0.9934, 1.0, 1.0], "auc": 0.9256}, "pr_curve": {"recall": [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.9934, 0.9934, 0.9803, 0.9737, 0.9737, 0.9737, 0.9671, 0.9539, 0.9408, 0.9342, 0.9342, 0.9276, 0.9145, 0.8882, 0.8684, 0.8487, 0.8355, 0.8158, 0.7829, 0.7434, 0.7303, 0.6908, 0.6645, 0.6184, 0.5592, 0.5263, 0.4934, 0.4342, 0.375, 0.3092, 0.2434, 0.1842, 0.125, 0.0658, 0.0], "precision": [0.304, 0.3102, 0.3167, 0.3234, 0.3304, 0.3378, 0.3455, 0.3535, 0.3619, 0.3707, 0.38, 0.3897, 0.4, 0.4108, 0.4222, 0.4343, 0.4441, 0.4576, 0.4656, 0.4774, 0.4933, 0.5103, 0.525, 0.537, 0.55, 0.568, 0.5917, 0.613, 0.6318, 0.6429, 0.66, 0.6789, 0.7056, 0.7294, 0.7438, 0.7533, 0.7929, 0.8077, 0.8417, 0.8545, 0.85, 0.8889, 0.9375, 0.9429, 0.95, 0.94, 0.925, 0.9333, 0.95, 1.0, 1.0], "ap": 0.8538}, "feature_importances": null}, "AdaBoost": {"model_name": "AdaBoost", "tier": "6. Ensemble Learning (Boosting)", "type": "Ensemble (Sequential Boosting)", "description": "Boosting adaptatif augmentant le poids des individus mal class\u00e9s au fil des it\u00e9rations.", "course_note": "Focalisation sur les cas difficiles (ex: faux n\u00e9gatifs cardiaques).", "fit_time": 0.8, "accuracy": {"mean": 0.842, "std": 0.0271, "str": "0.8420 \u00b1 0.0271"}, "precision": {"mean": 0.7463, "std": 0.0457, "str": "0.7463 \u00b1 0.0457"}, "recall": {"mean": 0.7305, "std": 0.0513, "str": "0.7305 \u00b1 0.0513"}, "f1_score": {"mean": 0.7377, "std": 0.0432, "str": "0.7377 \u00b1 0.0432"}, "precision_macro": {"mean": 0.8148, "std": 0.0317, "str": "0.8148 \u00b1 0.0317"}, "recall_macro": {"mean": 0.8106, "std": 0.032, "str": "0.8106 \u00b1 0.0320"}, "f1_macro": {"mean": 0.8123, "std": 0.0313, "str": "0.8123 \u00b1 0.0313"}, "roc_auc": {"mean": 0.9181, "std": 0.0297, "str": "0.9181 \u00b1 0.0297"}, "ap": {"mean": 0.8608, "std": 0.0376, "str": "0.8608 \u00b1 0.0376"}, "confusion_matrix": [[310, 38], [41, 111]], "roc_curve": {"fpr": [0.0, 0.0, 0.0029, 0.0029, 0.0057, 0.0115, 0.0144, 0.0172, 0.0201, 0.023, 0.0259, 0.0287, 0.0316, 0.0374, 0.046, 0.0489, 0.0517, 0.0546, 0.0575, 0.0603, 0.0632, 0.069, 0.0718, 0.0747, 0.0833, 0.0891, 0.0948, 0.1121, 0.1178, 0.1207, 0.1293, 0.1351, 0.1379, 0.1437, 0.1466, 0.1494, 0.1552, 0.158, 0.1753, 0.204, 0.2069, 0.2299, 0.2356, 0.2385, 0.2615, 0.2759, 0.2816, 0.3103, 0.3161, 0.3563, 0.3736, 0.3908, 0.4425, 0.4828, 0.4856, 0.4914, 0.4971, 0.5086, 0.5115, 0.5201, 0.5345, 0.5575, 0.6178, 0.6264, 0.6782, 0.6868, 0.7126, 0.7557, 0.7672, 0.8477, 0.8563, 0.9167, 1.0, 1.0], "tpr": [0.0, 0.1842, 0.25, 0.4079, 0.4342, 0.4474, 0.4605, 0.4868, 0.5, 0.5197, 0.5329, 0.5461, 0.5789, 0.5921, 0.6184, 0.6316, 0.6382, 0.6447, 0.6579, 0.6645, 0.6711, 0.6842, 0.6908, 0.7039, 0.7171, 0.7237, 0.7303, 0.7566, 0.7697, 0.7763, 0.8026, 0.8092, 0.8158, 0.8224, 0.8289, 0.8355, 0.8421, 0.8487, 0.8618, 0.8684, 0.875, 0.875, 0.8947, 0.9013, 0.9013, 0.9079, 0.9145, 0.9211, 0.9342, 0.9342, 0.9408, 0.9539, 0.9539, 0.9539, 0.9605, 0.9671, 0.9737, 0.9737, 0.9803, 0.9868, 0.9868, 0.9868, 0.9868, 0.9934, 0.9934, 0.9934, 0.9934, 0.9934, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0], "auc": 0.9181}, "pr_curve": {"recall": [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.9934, 0.9934, 0.9934, 0.9934, 0.9868, 0.9868, 0.9868, 0.9868, 0.9737, 0.9605, 0.9539, 0.9539, 0.9539, 0.9408, 0.9342, 0.9342, 0.9145, 0.9145, 0.9013, 0.8947, 0.875, 0.8618, 0.8487, 0.8355, 0.8158, 0.7763, 0.7566, 0.7303, 0.7039, 0.6711, 0.6447, 0.6053, 0.5789, 0.5329, 0.4868, 0.4474, 0.4079, 0.3487, 0.2895, 0.2237, 0.1711, 0.1118, 0.0526], "precision": [0.304, 0.3096, 0.3154, 0.3227, 0.329, 0.3355, 0.3439, 0.351, 0.3585, 0.3647, 0.3756, 0.3902, 0.4027, 0.4098, 0.4213, 0.4323, 0.4451, 0.454, 0.4635, 0.4785, 0.4966, 0.5124, 0.5219, 0.5379, 0.5569, 0.565, 0.5865, 0.6009, 0.6239, 0.6394, 0.6583, 0.6789, 0.7017, 0.7209, 0.7239, 0.7468, 0.7655, 0.7926, 0.8095, 0.8376, 0.8519, 0.8889, 0.9, 0.9136, 0.9444, 0.9841, 0.9815, 0.9778, 0.9714, 1.0, 1.0, 1.0], "ap": 0.8608}, "feature_importances": null}, "XGBoost": {"model_name": "XGBoost", "tier": "6. Ensemble Learning (Boosting)", "type": "Extreme Gradient Boosting", "description": "Gradient Boosting optimis\u00e9 de second ordre avec r\u00e9gularisation L1/L2 int\u00e9gr\u00e9e.", "course_note": "L'un des algorithmes les plus puissants sur donn\u00e9es tabulaires en Data Mining.", "fit_time": 0.43, "accuracy": {"mean": 0.866, "std": 0.0287, "str": "0.8660 \u00b1 0.0287"}, "precision": {"mean": 0.7884, "std": 0.0546, "str": "0.7884 \u00b1 0.0546"}, "recall": {"mean": 0.7701, "std": 0.0335, "str": "0.7701 \u00b1 0.0335"}, "f1_score": {"mean": 0.7786, "std": 0.04, "str": "0.7786 \u00b1 0.0400"}, "precision_macro": {"mean": 0.8442, "std": 0.0343, "str": "0.8442 \u00b1 0.0343"}, "recall_macro": {"mean": 0.839, "std": 0.0283, "str": "0.8390 \u00b1 0.0283"}, "f1_macro": {"mean": 0.8412, "std": 0.0309, "str": "0.8412 \u00b1 0.0309"}, "roc_auc": {"mean": 0.927, "std": 0.0191, "str": "0.9270 \u00b1 0.0191"}, "ap": {"mean": 0.8535, "std": 0.0249, "str": "0.8535 \u00b1 0.0249"}, "confusion_matrix": [[316, 32], [35, 117]], "roc_curve": {"fpr": [0.0, 0.0, 0.0, 0.0029, 0.0029, 0.0086, 0.0086, 0.0144, 0.0144, 0.0172, 0.0172, 0.0201, 0.0201, 0.023, 0.023, 0.0259, 0.0259, 0.0316, 0.0316, 0.0345, 0.0345, 0.0402, 0.0402, 0.0431, 0.0431, 0.0517, 0.0517, 0.0546, 0.0546, 0.069, 0.069, 0.0718, 0.0718, 0.0776, 0.0776, 0.0833, 0.0833, 0.092, 0.092, 0.1034, 0.1034, 0.1121, 0.1121, 0.1149, 0.1149, 0.1178, 0.1178, 0.1207, 0.1207, 0.1322, 0.1322, 0.1379, 0.1379, 0.1408, 0.1408, 0.1466, 0.1466, 0.1523, 0.1523, 0.1724, 0.1724, 0.1782, 0.1782, 0.1839, 0.1839, 0.1897, 0.1897, 0.2213, 0.2213, 0.2414, 0.2414, 0.2586, 0.2586, 0.2931, 0.2931, 0.3075, 0.3075, 0.3305, 0.3305, 0.3391, 0.3391, 0.3448, 0.3448, 0.3764, 0.3764, 0.3822, 0.3822, 0.3937, 0.3937, 0.546, 0.546, 0.5546, 0.5546, 0.6782, 0.6782, 1.0, 1.0], "tpr": [0.0, 0.0066, 0.0987, 0.0987, 0.2368, 0.2368, 0.25, 0.25, 0.3487, 0.3487, 0.375, 0.375, 0.5066, 0.5066, 0.5132, 0.5132, 0.5263, 0.5263, 0.5724, 0.5724, 0.6053, 0.6053, 0.6316, 0.6316, 0.6447, 0.6447, 0.6513, 0.6513, 0.6579, 0.6579, 0.6776, 0.6776, 0.7434, 0.7434, 0.7566, 0.7566, 0.7632, 0.7632, 0.7763, 0.7763, 0.7895, 0.7895, 0.7961, 0.7961, 0.8158, 0.8158, 0.8224, 0.8224, 0.8289, 0.8289, 0.8355, 0.8355, 0.8421, 0.8421, 0.8487, 0.8487, 0.8618, 0.8618, 0.875, 0.875, 0.8816, 0.8816, 0.8882, 0.8882, 0.8947, 0.8947, 0.9079, 0.9079, 0.9145, 0.9145, 0.9211, 0.9211, 0.9276, 0.9276, 0.9342, 0.9342, 0.9408, 0.9408, 0.9474, 0.9474, 0.9539, 0.9539, 0.9605, 0.9605, 0.9671, 0.9671, 0.9737, 0.9737, 0.9803, 0.9803, 0.9868, 0.9868, 0.9934, 0.9934, 1.0, 1.0, 1.0], "auc": 0.927}, "pr_curve": {"recall": [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.9934, 0.9934, 0.9934, 0.9934, 0.9868, 0.9803, 0.9803, 0.9803, 0.9803, 0.9803, 0.9671, 0.9605, 0.9474, 0.9408, 0.9276, 0.9211, 0.9145, 0.9079, 0.8947, 0.875, 0.8487, 0.8289, 0.7961, 0.7763, 0.7434, 0.6908, 0.6579, 0.6316, 0.5789, 0.5263, 0.4803, 0.4145, 0.3553, 0.2961, 0.2434, 0.1908, 0.125, 0.0658, 0.0], "precision": [0.304, 0.3102, 0.3167, 0.3234, 0.3304, 0.3378, 0.3455, 0.3535, 0.3619, 0.3707, 0.38, 0.3897, 0.3974, 0.4081, 0.4194, 0.4314, 0.4412, 0.4515, 0.4656, 0.4806, 0.4967, 0.5138, 0.525, 0.5407, 0.5538, 0.572, 0.5875, 0.6087, 0.6318, 0.6571, 0.68, 0.7, 0.7167, 0.7412, 0.7562, 0.7867, 0.8071, 0.8077, 0.8333, 0.8727, 0.88, 0.8889, 0.9125, 0.9, 0.9, 0.9, 0.925, 0.9667, 0.95, 1.0, 1.0], "ap": 0.8535}, "feature_importances": null}, "Stacking Classifier": {"model_name": "Stacking Classifier", "tier": "7. M\u00e9ta-Ensemble (Stacking)", "type": "Meta-Learning", "description": "Combinaison h\u00e9t\u00e9rog\u00e8ne (RF + Na\u00efve Bayes + KNN + XGBoost) entra\u00een\u00e9e par un m\u00e9ta-classifieur LogisticRegression.", "course_note": "Exploite les forces compl\u00e9mentaires de paradigmes de classification h\u00e9t\u00e9rog\u00e8nes.", "fit_time": 1.79, "accuracy": {"mean": 0.852, "std": 0.0264, "str": "0.8520 \u00b1 0.0264"}, "precision": {"mean": 0.7828, "std": 0.0567, "str": "0.7828 \u00b1 0.0567"}, "recall": {"mean": 0.717, "std": 0.0337, "str": "0.7170 \u00b1 0.0337"}, "f1_score": {"mean": 0.7474, "std": 0.036, "str": "0.7474 \u00b1 0.0360"}, "precision_macro": {"mean": 0.8317, "std": 0.0337, "str": "0.8317 \u00b1 0.0337"}, "recall_macro": {"mean": 0.8139, "std": 0.025, "str": "0.8139 \u00b1 0.0250"}, "f1_macro": {"mean": 0.8213, "std": 0.0279, "str": "0.8213 \u00b1 0.0279"}, "roc_auc": {"mean": 0.9287, "std": 0.0276, "str": "0.9287 \u00b1 0.0276"}, "ap": {"mean": 0.8661, "std": 0.0308, "str": "0.8661 \u00b1 0.0308"}, "confusion_matrix": [[317, 31], [43, 109]], "roc_curve": {"fpr": [0.0, 0.0, 0.0057, 0.0086, 0.0115, 0.0144, 0.0172, 0.0201, 0.0259, 0.0287, 0.0345, 0.0402, 0.0431, 0.046, 0.0546, 0.0575, 0.0603, 0.0661, 0.0747, 0.0776, 0.0833, 0.0862, 0.092, 0.0948, 0.0977, 0.1006, 0.1034, 0.1063, 0.1092, 0.1149, 0.1178, 0.1322, 0.1379, 0.1466, 0.1609, 0.1638, 0.1782, 0.181, 0.1925, 0.2471, 0.3218, 0.3276, 0.3362, 0.3477, 0.3621, 0.3793, 0.4052, 0.4943, 0.5115, 0.6466, 1.0], "tpr": [0.0, 0.2632, 0.2829, 0.2961, 0.3684, 0.4013, 0.5329, 0.5395, 0.5461, 0.5526, 0.5789, 0.6118, 0.6184, 0.625, 0.6382, 0.6447, 0.6645, 0.6776, 0.6842, 0.6908, 0.7039, 0.7171, 0.7368, 0.7434, 0.7566, 0.7632, 0.7895, 0.8026, 0.8092, 0.8224, 0.8421, 0.8487, 0.8816, 0.8947, 0.9013, 0.9079, 0.9145, 0.9211, 0.9276, 0.9342, 0.9408, 0.9474, 0.9539, 0.9605, 0.9671, 0.9737, 0.9803, 0.9868, 0.9934, 1.0, 1.0], "auc": 0.9287}, "pr_curve": {"recall": [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.9934, 0.9934, 0.9934, 0.9934, 0.9934, 0.9803, 0.9803, 0.9803, 0.9803, 0.9737, 0.9605, 0.9474, 0.9342, 0.9342, 0.9342, 0.9276, 0.9276, 0.9079, 0.8947, 0.8684, 0.8421, 0.8026, 0.7566, 0.7171, 0.6842, 0.6513, 0.6184, 0.5789, 0.5395, 0.4868, 0.4211, 0.3684, 0.3026, 0.2632, 0.1974, 0.1316, 0.0658, 0.0], "precision": [0.304, 0.3102, 0.3167, 0.3234, 0.3304, 0.3378, 0.3455, 0.3535, 0.3619, 0.3707, 0.38, 0.3897, 0.4, 0.4081, 0.4194, 0.4314, 0.4441, 0.4576, 0.4656, 0.4806, 0.4967, 0.5138, 0.5286, 0.5407, 0.5538, 0.568, 0.5917, 0.6174, 0.6409, 0.6714, 0.69, 0.7158, 0.7333, 0.7529, 0.7625, 0.7667, 0.7786, 0.8, 0.825, 0.8545, 0.88, 0.9111, 0.925, 0.9143, 0.9333, 0.92, 1.0, 1.0, 1.0, 1.0, 1.0], "ap": 0.8661}, "feature_importances": null}}};
+    const PROFILE = {"name": "Heart Attack / Disease Risk Dataset", "total_samples": 500, "num_features": 25, "numeric_count": 19, "categorical_count": 6, "target_column": "has_heart_disease", "distribution": {"0": 348, "1": 152}, "percentages": {"0": 69.6, "1": 30.4}, "is_imbalanced": true, "imbalance_ratio": 2.29, "missing_count": 0, "duplicate_count": 0};
+
+    let currentScenario = 'unbalanced';
+    let chartInstances = {};
+
+    function setScenario(scen) {
+      currentScenario = scen;
+      document.getElementById('btnUnbalanced').classList.toggle('active', scen === 'unbalanced');
+      document.getElementById('btnBalanced').classList.toggle('active', scen === 'balanced');
+      updateAllViews();
+    }
+
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+      event.currentTarget.classList.add('active');
+      document.getElementById(tabId).classList.add('active');
+    }
+
+    function toggleTheme() {
+      const html = document.documentElement;
+      const current = html.getAttribute('data-theme');
+      const next = current === 'dark' ? 'light' : 'dark';
+      html.setAttribute('data-theme', next);
+      Chart.defaults.color = next === 'dark' ? '#94a3b8' : '#475569';
+      Chart.defaults.borderColor = next === 'dark' ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)';
+      updateCharts();
+    }
+
+    function getTierClass(tier) {
+      if (tier.includes('Baseline')) return 'tier-baseline';
+      if (tier.includes('Simple')) return 'tier-simple';
+      if (tier.includes('Linéaire')) return 'tier-linear';
+      if (tier.includes('Ensemble')) return 'tier-ensemble';
+      if (tier.includes('Stacking')) return 'tier-stacking';
+      return 'tier-simple';
+    }
+
+    function renderTable() {
+      const tbody = document.getElementById('tableBody');
+      tbody.innerHTML = '';
+      const data = RAW_DATA[currentScenario];
+      const modelNames = Object.keys(data);
+
+      // Find best values for highlighting
+      let maxAcc = -1, maxPrec = -1, maxRec = -1, maxF1 = -1, maxF1Macro = -1, maxRoc = -1, maxAp = -1;
+      modelNames.forEach(k => {
+        const m = data[k];
+        if (m.accuracy.mean > maxAcc) maxAcc = m.accuracy.mean;
+        if (m.precision.mean > maxPrec) maxPrec = m.precision.mean;
+        if (m.recall.mean > maxRec) maxRec = m.recall.mean;
+        if (m.f1_score.mean > maxF1) maxF1 = m.f1_score.mean;
+        if (m.f1_macro.mean > maxF1Macro) maxF1Macro = m.f1_macro.mean;
+        if (m.roc_auc.mean > maxRoc) maxRoc = m.roc_auc.mean;
+        if (m.ap.mean > maxAp) maxAp = m.ap.mean;
+      });
+
+      modelNames.forEach(name => {
+        const m = data[name];
+        const tr = document.createElement('tr');
+
+        const isZeroR = name.includes('Zero-R');
+
+        tr.innerHTML = `
+          <td style="font-weight: 600;">${name}</td>
+          <td><span class="tier-badge ${getTierClass(m.tier)}">${m.type}</span></td>
+          <td class="score-cell ${m.accuracy.mean === maxAcc ? 'best-score' : (isZeroR ? 'baseline-score' : '')}">
+            ${m.accuracy.mean.toFixed(4)} <span class="score-std">±${m.accuracy.std.toFixed(4)}</span>
+          </td>
+          <td class="score-cell ${m.precision.mean === maxPrec ? 'best-score' : ''}">
+            ${m.precision.mean.toFixed(4)} <span class="score-std">±${m.precision.std.toFixed(4)}</span>
+          </td>
+          <td class="score-cell ${m.recall.mean === maxRec ? 'best-score' : ''}">
+            ${m.recall.mean.toFixed(4)} <span class="score-std">±${m.recall.std.toFixed(4)}</span>
+          </td>
+          <td class="score-cell ${m.f1_score.mean === maxF1 ? 'best-score' : ''}">
+            ${m.f1_score.mean.toFixed(4)} <span class="score-std">±${m.f1_score.std.toFixed(4)}</span>
+          </td>
+          <td class="score-cell ${m.f1_macro.mean === maxF1Macro ? 'best-score' : ''}">
+            ${m.f1_macro.mean.toFixed(4)} <span class="score-std">±${m.f1_macro.std.toFixed(4)}</span>
+          </td>
+          <td class="score-cell ${m.roc_auc.mean === maxRoc ? 'best-score' : ''}">
+            ${m.roc_auc.mean.toFixed(4)} <span class="score-std">±${m.roc_auc.std.toFixed(4)}</span>
+          </td>
+          <td class="score-cell ${m.ap.mean === maxAp ? 'best-score' : ''}">
+            ${m.ap.mean.toFixed(4)} <span class="score-std">±${m.ap.std.toFixed(4)}</span>
+          </td>
+          <td class="score-cell" style="color: var(--text-dim);">${m.fit_time.toFixed(2)}s</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function renderConfusionMatrices() {
+      const container = document.getElementById('cmContainer');
+      container.innerHTML = '';
+      const data = RAW_DATA[currentScenario];
+
+      // Showcase key models: Zero-R, One-R, Decision Tree, Random Forest, XGBoost, Stacking
+      const featured = ['Zero-R (Majoritaire)', 'One-R (1 Règle)', 'Arbre de Décision (DT)', 'Random Forest (RF / RM)', 'XGBoost', 'Stacking Classifier'];
+
+      featured.forEach(name => {
+        if (!data[name]) return;
+        const m = data[name];
+        const cm = m.confusion_matrix; // [[TN, FP], [FN, TP]]
+        const tn = cm[0][0], fp = cm[0][1], fn = cm[1][0], tp = cm[1][1];
+        const total = tn + fp + fn + tp;
+
+        const card = document.createElement('div');
+        card.className = 'cm-card';
+        card.innerHTML = `
+          <div style="font-weight: 700; font-size: 0.95rem; margin-bottom: 4px;">${name}</div>
+          <div style="font-size: 0.8rem; color: var(--text-dim); margin-bottom: 10px;">${m.type}</div>
+          <div class="cm-grid">
+            <div></div>
+            <div class="cm-header">Prédit: Sain (0)</div>
+            <div class="cm-header">Prédit: Malade (1)</div>
+
+            <div class="cm-header" style="text-align: right;">Réel: 0</div>
+            <div class="cm-box cm-tn" title="Vrais Négatifs">${tn} <span style="font-size: 0.72rem; display:block;">TN (${(tn/total*100).toFixed(1)}%)</span></div>
+            <div class="cm-box cm-fp" title="Faux Positifs">${fp} <span style="font-size: 0.72rem; display:block;">FP (${(fp/total*100).toFixed(1)}%)</span></div>
+
+            <div class="cm-header" style="text-align: right;">Réel: 1</div>
+            <div class="cm-box cm-fn" title="Faux Négatifs (DANGER)">${fn} <span style="font-size: 0.72rem; display:block;">FN (${(fn/total*100).toFixed(1)}%)</span></div>
+            <div class="cm-box cm-tp" title="Vrais Positifs">${tp} <span style="font-size: 0.72rem; display:block;">TP (${(tp/total*100).toFixed(1)}%)</span></div>
+          </div>
+          <div style="margin-top: 10px; font-size: 0.82rem; display: flex; justify-content: space-between; color: var(--text-muted);">
+            <span>Rappel: <strong>${(m.recall.mean*100).toFixed(1)}%</strong></span>
+            <span>Précision: <strong>${(m.precision.mean*100).toFixed(1)}%</strong></span>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    function renderFeatureImportances() {
+      const data = RAW_DATA[currentScenario];
+      const rfData = data['Random Forest (RF / RM)']?.feature_importances;
+      const xgbData = data['XGBoost']?.feature_importances;
+
+      function renderList(targetId, featObj) {
+        const target = document.getElementById(targetId);
+        if (!featObj) {
+          target.innerHTML = '<div style="color: var(--text-dim);">Non disponible</div>';
+          return;
+        }
+        const entries = Object.entries(featObj).sort((a, b) => b[1] - a[1]).slice(0, 10);
+        const maxVal = entries[0][1] || 1;
+        target.innerHTML = entries.map(([name, val]) => `
+          <div class="fi-item">
+            <div class="fi-label-row">
+              <span>${name}</span>
+              <span style="font-family: var(--font-mono);">${(val * 100).toFixed(2)}%</span>
+            </div>
+            <div class="fi-bar-bg">
+              <div class="fi-bar-fill" style="width: ${Math.max(5, (val / maxVal * 100))}%;"></div>
+            </div>
+          </div>
+        `).join('');
+      }
+
+      renderList('rfFeatureList', rfData);
+      renderList('xgbFeatureList', xgbData);
+    }
+
+    function updateCharts() {
+      const data = RAW_DATA[currentScenario];
+      const labels = Object.keys(data);
+
+      const accMeans = labels.map(k => data[k].accuracy.mean);
+      const f1Means = labels.map(k => data[k].f1_score.mean);
+      const precMeans = labels.map(k => data[k].precision.mean);
+      const recMeans = labels.map(k => data[k].recall.mean);
+      const rocAucMeans = labels.map(k => data[k].roc_auc.mean);
+      const apMeans = labels.map(k => data[k].ap.mean);
+
+      // Chart 1: Accuracy & F1
+      if (chartInstances.accF1) chartInstances.accF1.destroy();
+      chartInstances.accF1 = new Chart(document.getElementById('chartAccF1'), {
+        type: 'bar',
+        data: {
+          labels: labels.map(l => l.replace(/ \(.*\)/, '')),
+          datasets: [
+            {
+              label: 'Exactitude (Accuracy)',
+              data: accMeans,
+              backgroundColor: 'rgba(6, 182, 212, 0.7)',
+              borderRadius: 6,
+            },
+            {
+              label: 'F1-Score',
+              data: f1Means,
+              backgroundColor: 'rgba(239, 68, 68, 0.75)',
+              borderRadius: 6,
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: { min: 0, max: 1.0, grid: { color: 'rgba(255,255,255,0.06)' } },
+            x: { grid: { display: false } }
+          }
+        }
+      });
+
+      // Chart 2: Precision vs Recall
+      if (chartInstances.precRec) chartInstances.precRec.destroy();
+      chartInstances.precRec = new Chart(document.getElementById('chartPrecRec'), {
+        type: 'bar',
+        data: {
+          labels: labels.map(l => l.replace(/ \(.*\)/, '')),
+          datasets: [
+            {
+              label: 'Précision',
+              data: precMeans,
+              backgroundColor: 'rgba(139, 92, 246, 0.7)',
+              borderRadius: 6,
+            },
+            {
+              label: 'Rappel (Sensibilité)',
+              data: recMeans,
+              backgroundColor: 'rgba(16, 185, 129, 0.75)',
+              borderRadius: 6,
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: { min: 0, max: 1.0, grid: { color: 'rgba(255,255,255,0.06)' } },
+            x: { grid: { display: false } }
+          }
+        }
+      });
+
+      // Chart 3: ROC-AUC vs AP
+      if (chartInstances.rocAp) chartInstances.rocAp.destroy();
+      chartInstances.rocAp = new Chart(document.getElementById('chartRocAp'), {
+        type: 'bar',
+        data: {
+          labels: labels.map(l => l.replace(/ \(.*\)/, '')),
+          datasets: [
+            {
+              label: 'ROC-AUC',
+              data: rocAucMeans,
+              backgroundColor: 'rgba(245, 158, 11, 0.75)',
+              borderRadius: 6,
+            },
+            {
+              label: 'Average Precision (AP)',
+              data: apMeans,
+              backgroundColor: 'rgba(236, 72, 153, 0.7)',
+              borderRadius: 6,
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: { min: 0, max: 1.0, grid: { color: 'rgba(255,255,255,0.06)' } },
+            x: { grid: { display: false } }
+          }
+        }
+      });
+
+      // Chart 4: ROC Curves
+      if (chartInstances.rocCurves) chartInstances.rocCurves.destroy();
+      const colors = ['#ef4444', '#06b6d4', '#8b5cf6', '#10b981', '#f59e0b', '#ec4899', '#3b82f6'];
+      const topModels = ['Zero-R (Majoritaire)', 'One-R (1 Règle)', 'Arbre de Décision (DT)', 'Random Forest (RF / RM)', 'SVM (Support Vector Machine)', 'XGBoost', 'Stacking Classifier'];
+
+      const rocDatasets = topModels.filter(m => data[m]).map((m, idx) => {
+        const r = data[m].roc_curve;
+        const pts = r.fpr.map((x, i) => ({ x: x, y: r.tpr[i] }));
+        return {
+          label: `${m} (AUC = ${r.auc})`,
+          data: pts,
+          borderColor: colors[idx % colors.length],
+          borderWidth: 2,
+          fill: false,
+          showLine: true,
+          pointRadius: 0,
+        };
+      });
+
+      // Add diagonal reference line
+      rocDatasets.push({
+        label: 'Aléatoire pur (AUC = 0.50)',
+        data: [{x: 0, y: 0}, {x: 1, y: 1}],
+        borderColor: 'rgba(255,255,255,0.3)',
+        borderDash: [5, 5],
+        borderWidth: 1.5,
+        pointRadius: 0,
+        fill: false,
+      });
+
+      chartInstances.rocCurves = new Chart(document.getElementById('chartRocCurve'), {
+        type: 'scatter',
+        data: { datasets: rocDatasets },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            x: { type: 'linear', min: 0, max: 1, title: { display: true, text: 'Taux de Faux Positifs (FPR)' } },
+            y: { type: 'linear', min: 0, max: 1, title: { display: true, text: 'Taux de Vrais Positifs (TPR / Rappel)' } },
+          }
+        }
+      });
+
+      // Chart 5: PR Curves
+      if (chartInstances.prCurves) chartInstances.prCurves.destroy();
+      const prDatasets = topModels.filter(m => data[m]).map((m, idx) => {
+        const p = data[m].pr_curve;
+        const pts = p.recall.map((x, i) => ({ x: x, y: p.precision[i] }));
+        return {
+          label: `${m} (AP = ${p.ap})`,
+          data: pts,
+          borderColor: colors[idx % colors.length],
+          borderWidth: 2,
+          fill: false,
+          showLine: true,
+          pointRadius: 0,
+        };
+      });
+
+      chartInstances.prCurves = new Chart(document.getElementById('chartPrCurve'), {
+        type: 'scatter',
+        data: { datasets: prDatasets },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            x: { type: 'linear', min: 0, max: 1, title: { display: true, text: 'Rappel (Recall)' } },
+            y: { type: 'linear', min: 0, max: 1, title: { display: true, text: 'Précision (Precision)' } },
+          }
+        }
+      });
+    }
+
+    function updateAllViews() {
+      renderTable();
+      renderConfusionMatrices();
+      renderFeatureImportances();
+      updateCharts();
+    }
+
+    // Sorting utility for results table
+    let sortAsc = false;
+    function sortTable(colIndex) {
+      const table = document.getElementById('resultsTable');
+      const rows = Array.from(table.rows).slice(1);
+      sortAsc = !sortAsc;
+
+      rows.sort((r1, r2) => {
+        const t1 = r1.cells[colIndex].innerText.split('±')[0].trim();
+        const t2 = r2.cells[colIndex].innerText.split('±')[0].trim();
+        const n1 = parseFloat(t1);
+        const n2 = parseFloat(t2);
+
+        if (!isNaN(n1) && !isNaN(n2)) {
+          return sortAsc ? n1 - n2 : n2 - n1;
+        }
+        return sortAsc ? t1.localeCompare(t2) : t2.localeCompare(t1);
+      });
+
+      const tbody = document.getElementById('tableBody');
+      rows.forEach(r => tbody.appendChild(r));
+    }
+
+    // Initial load
+    window.addEventListener('DOMContentLoaded', () => {
+      Chart.defaults.color = '#94a3b8';
+      Chart.defaults.borderColor = 'rgba(255, 255, 255, 0.08)';
+      updateAllViews();
+    });
+  </script>
+</body>
+</html>
